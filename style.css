@@ -512,20 +512,6 @@ body {
 .location-input-wrap input {
   flex: 1;
 }
-.btn-gps {
-  padding: 0 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  font-size: 1.1rem;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-  flex-shrink: 0;
-}
-.btn-gps:active { background: var(--collected-bg); }
-.btn-gps.loading { opacity: 0.6; pointer-events: none; }
-
 /* 緯度経度 */
 .latlng-wrap {
   display: flex;
@@ -628,3 +614,99 @@ body {
 }
 .btn-geocode:hover { background: #e8f4fd; border-color: #7ab8e8; }
 .btn-geocode:disabled { opacity: 0.5; pointer-events: none; }
+
+/* === ナビタブ === */
+.main-nav {
+  display: flex;
+  gap: 0;
+  margin-top: 0.5rem;
+}
+.nav-btn {
+  flex: 1;
+  padding: 0.55rem 0.25rem;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.nav-btn.active {
+  color: #fff;
+  border-bottom-color: var(--accent-light);
+}
+.nav-btn:hover { color: #fff; }
+
+/* === ビューページ === */
+.view-page { min-height: 60vh; }
+
+/* === 地図ビュー === */
+.map-page-header {
+  padding: 0.6rem 1rem 0;
+}
+.map-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+#map-container {
+  width: 100%;
+  height: calc(100vh - 160px);
+  min-height: 400px;
+}
+
+/* === データ管理ビュー === */
+.data-section {
+  padding: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.data-section h2 {
+  font-size: 1.1rem;
+  color: var(--primary-dark);
+  margin-bottom: 1rem;
+}
+.data-card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow);
+}
+.data-card.danger { border-color: #f5c6c6; }
+.data-card-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.data-card-body h3 {
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+  color: var(--text);
+}
+.data-card-body p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin-bottom: 0.6rem;
+}
+.btn-data {
+  padding: 0.5rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--primary);
+  color: white;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-data:hover { background: var(--primary-light); }
+.btn-data.danger { background: #c0392b; }
+.btn-data.danger:hover { background: #a93226; }

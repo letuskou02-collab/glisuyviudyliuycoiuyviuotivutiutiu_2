@@ -13,7 +13,6 @@ let searchQuery = '';
 let isListView = false;
 let activeModalId = null;
 let currentPhotos = [];
-let fabOpen = false;
 let tapTimers = {};
 
 // === データ管理 ===
@@ -280,6 +279,13 @@ function resetData() {
 
 // === イベント設定 ===
 function setupEvents() {
+  // ナビタブ切替
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchView(btn.dataset.view);
+    });
+  });
+
   // 検索
   document.getElementById('search-input').addEventListener('input', (e) => {
     searchQuery = e.target.value.trim();
@@ -346,15 +352,10 @@ function setupEvents() {
     if (card) card.classList.toggle('collected', newVal);
   });
 
-  // FAB
-  document.getElementById('fab-main').addEventListener('click', () => {
-    fabOpen = !fabOpen;
-    document.getElementById('fab-sub').classList.toggle('open', fabOpen);
-    document.getElementById('fab-main').textContent = fabOpen ? '✕' : '⚙';
-  });
-  document.getElementById('fab-export').addEventListener('click', () => { exportData(); closeFab(); });
-  document.getElementById('fab-import').addEventListener('click', () => { importData(); closeFab(); });
-  document.getElementById('fab-reset').addEventListener('click', () => { resetData(); closeFab(); });
+  // データ管理ページのボタン
+  document.getElementById('btn-export').addEventListener('click', exportData);
+  document.getElementById('btn-import').addEventListener('click', importData);
+  document.getElementById('btn-reset').addEventListener('click', resetData);
 
   // 施設名からジオコーディング
   document.getElementById('btn-geocode').addEventListener('click', geocodeLocation);
@@ -362,8 +363,6 @@ function setupEvents() {
     if (e.key === 'Enter') { e.preventDefault(); geocodeLocation(); }
   });
 
-  // GPS ボタン
-  document.getElementById('btn-gps').addEventListener('click', getLocation);
 
   // 緯度経度入力でマップリンク更新
   document.getElementById('modal-lat-input').addEventListener('input', () => {
@@ -424,37 +423,6 @@ async function geocodeLocation() {
     btn.textContent = '🔍';
     btn.disabled = false;
   }
-}
-
-// === GPS取得 ===
-function getLocation() {
-  const btn = document.getElementById('btn-gps');
-  if (!navigator.geolocation) {
-    showToast('このブラウザはGPSに対応していません', 'error');
-    return;
-  }
-  btn.classList.add('loading');
-  btn.textContent = '⏳';
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = Math.round(pos.coords.latitude * 1000000) / 1000000;
-      const lng = Math.round(pos.coords.longitude * 1000000) / 1000000;
-      document.getElementById('modal-lat-input').value = lat;
-      document.getElementById('modal-lng-input').value = lng;
-      updateMapLink(lat, lng);
-      btn.classList.remove('loading');
-      btn.textContent = '🎯';
-      showToast('現在地を取得しました', 'success');
-    },
-    (err) => {
-      btn.classList.remove('loading');
-      btn.textContent = '🎯';
-      const msg = err.code === 1 ? 'GPS使用が許可されていません' :
-                  err.code === 2 ? '位置情報を取得できませんでした' : 'GPS取得がタイムアウトしました';
-      showToast(msg, 'error');
-    },
-    { enableHighAccuracy: true, timeout: 10000 }
-  );
 }
 
 function updateMapLink(lat, lng) {
@@ -529,11 +497,77 @@ function renderPhotoGrid() {
   });
 }
 
-function closeFab() {
-  fabOpen = false;
-  document.getElementById('fab-sub').classList.remove('open');
-  document.getElementById('fab-main').textContent = '⚙';
+// === ビュー切替 ===
+let currentView = 'list';
+let mapInstance = null;
+
+function switchView(view) {
+  if (view === currentView) return;
+  currentView = view;
+
+  document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+
+  const page = document.getElementById('view-' + view);
+  page.style.display = '';
+
+  if (view === 'map') {
+    // toolbar を隠す
+    document.querySelector('.toolbar').style.display = 'none';
+    initMap();
+  } else {
+    document.querySelector('.toolbar').style.display = '';
+  }
 }
+
+function initMap() {
+  const container = document.getElementById('map-container');
+  if (!mapInstance) {
+    mapInstance = L.map('map-container').setView([36.5, 137.0], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19
+    }).addTo(mapInstance);
+  }
+  // 既存マーカーを全削除
+  if (mapInstance._markerLayer) {
+    mapInstance._markerLayer.clearLayers();
+  } else {
+    mapInstance._markerLayer = L.layerGroup().addTo(mapInstance);
+  }
+
+  const pins = [];
+  Object.entries(collectedData).forEach(([id, d]) => {
+    if (!d.collected || d.lat == null || d.lng == null) return;
+    const route = KOKUDO_ROUTES.find(r => r.id === parseInt(id));
+    if (!route) return;
+    const lat = parseFloat(d.lat);
+    const lng = parseFloat(d.lng);
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    const marker = L.marker([lat, lng]).addTo(mapInstance._markerLayer);
+    const photoHtml = (d.photos && d.photos.length > 0)
+      ? `<img src="${d.photos[0]}" style="width:100%;max-width:200px;border-radius:6px;margin-top:6px;" />`
+      : '';
+    marker.bindPopup(
+      `<b>国道${id}号</b><br>` +
+      `<small>${route.region}／${route.from}→${route.to}</small><br>` +
+      (d.location ? `📍 ${d.location}<br>` : '') +
+      (d.date ? `📅 ${d.date}<br>` : '') +
+      (d.memo ? `📝 ${d.memo}<br>` : '') +
+      photoHtml
+    );
+    pins.push([lat, lng]);
+  });
+
+  if (pins.length > 0) {
+    mapInstance.fitBounds(pins, { padding: [40, 40], maxZoom: 12 });
+  }
+
+  // Leaflet のサイズ再計算（非表示→表示時に必要）
+  setTimeout(() => mapInstance.invalidateSize(), 50);
+}
+
 
 // === Service Worker ===
 function registerSW() {
