@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 背景 -->
+  <rect width="512" height="512" rx="80" fill="#1a6b2f"/>
+  <!-- 道路 -->
+  <rect x="60" y="240" width="392" height="32" rx="6" fill="#555"/>
+  <rect x="60" y="240" width="392" height="32" rx="6" fill="#666"/>
+  <!-- センターライン -->
+  <rect x="100" y="252" width="60" height="8" rx="4" fill="#f5c060"/>
+  <rect x="220" y="252" width="60" height="8" rx="4" fill="#f5c060"/>
+  <rect x="340" y="252" width="60" height="8" rx="4" fill="#f5c060"/>
+  <!-- 盾形（国道標識） -->
+  <path d="M256 80 L330 120 L330 210 Q330 240 256 260 Q182 240 182 210 L182 120 Z" fill="#fff" stroke="#1a6b2f" stroke-width="8"/>
+  <path d="M256 95 L318 130 L318 208 Q318 232 256 248 Q194 232 194 208 L194 130 Z" fill="#1a6b2f"/>
+  <!-- 国 文字 -->
+  <text x="256" y="190" font-family="'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" font-size="68" font-weight="900" fill="#fff" text-anchor="middle" dominant-baseline="middle">国</text>
+  <!-- 下部テキスト -->
+  <text x="256" y="340" font-family="'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" font-size="44" font-weight="700" fill="#f5c060" text-anchor="middle">ステッカー</text>
+  <text x="256" y="400" font-family="'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" font-size="32" font-weight="600" fill="rgba(255,255,255,0.8)" text-anchor="middle">コレクション</text>
+</svg>
