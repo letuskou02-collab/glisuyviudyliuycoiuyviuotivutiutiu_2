@@ -14,7 +14,7 @@ let isListView = false;
 let activeModalId = null;
 let currentPhotos = [];
 let tapTimers = {};
-let currentView = 'home';
+let currentView = 'menu';
 let mapInstance = null;
 let mapFilter = 'collected';
 
@@ -370,20 +370,28 @@ function switchView(view) {
   document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.tab-item').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
   document.getElementById('view-' + view).style.display = '';
-  if (view === 'map') requestAnimationFrame(() => initMap());
+  // メニュー画面時はボトムタブを隠す
+  document.querySelector('.bottom-tab-bar').style.display = view === 'menu' ? 'none' : '';
+  if (view === 'map') {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      initMap();
+    }));
+  }
 }
 
 // === 地図 ===
 function initMap() {
+  const container = document.getElementById('map-container');
   if (!mapInstance) {
-    mapInstance = L.map('map-container').setView([36.5, 137.0], 5);
+    mapInstance = L.map(container, { zoomControl: true }).setView([36.5, 137.0], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       maxZoom: 19
     }).addTo(mapInstance);
     mapInstance._markerLayer = L.layerGroup().addTo(mapInstance);
   }
-  mapInstance.invalidateSize();
+  // コンテナサイズが確定してからinvalidateSize
+  mapInstance.invalidateSize({ animate: false });
   mapInstance._markerLayer.clearLayers();
 
   const pins = [];
@@ -516,8 +524,10 @@ function setupEvents() {
   });
 
   // 写真
-  document.getElementById('photo-input').addEventListener('change', (e) => {
-    addPhotos(e.target.files); e.target.value = '';
+  ['photo-input-camera', 'photo-input-library', 'photo-input-file'].forEach(id => {
+    document.getElementById(id).addEventListener('change', (e) => {
+      addPhotos(e.target.files); e.target.value = '';
+    });
   });
 
   // ESC
@@ -538,5 +548,24 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
   setupEvents();
   renderAll();
+
+  // メニューカードの遷移イベント
+  document.querySelectorAll('.menu-card').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dest = btn.dataset.goto;
+      localStorage.setItem('kokudo_visited', '1');
+      switchView(dest);
+    });
+  });
+
+  // 初回起動判定: 一度でも訪問済みならホームへ、初回のみメニューを表示
+  if (localStorage.getItem('kokudo_visited')) {
+    currentView = 'menu'; // switchViewの同一ビューガードを回避
+    switchView('home');
+  } else {
+    document.getElementById('view-menu').style.display = '';
+    document.querySelector('.bottom-tab-bar').style.display = 'none';
+  }
+
   registerSW();
 });
