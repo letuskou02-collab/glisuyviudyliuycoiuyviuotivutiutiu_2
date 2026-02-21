@@ -58,14 +58,6 @@
           </div>
           <span class="menu-card-arrow">›</span>
         </button>
-        <button class="menu-card" data-goto="map">
-          <span class="menu-card-icon">🗺</span>
-          <div class="menu-card-body">
-            <div class="menu-card-title">地図</div>
-            <div class="menu-card-desc">取得場所をマップで確認</div>
-          </div>
-          <span class="menu-card-arrow">›</span>
-        </button>
         <button class="menu-card" data-goto="gallery">
           <span class="menu-card-icon">📸</span>
           <div class="menu-card-body">
@@ -112,6 +104,12 @@
       <section class="home-section">
         <div class="home-section-title">最近の取得</div>
         <div id="recent-list" class="recent-list"></div>
+      </section>
+
+      <!-- 取得場所地図 -->
+      <section class="home-section home-section-map">
+        <div class="home-section-title">取得場所マップ</div>
+        <div id="home-map-container"></div>
       </section>
     </div>
 
@@ -162,19 +160,6 @@
       </div>
 
       <div id="routes-container" class="routes-grid"></div>
-    </div>
-
-    <!-- ===== 地図 ===== -->
-    <div id="view-map" class="view-page" style="display:none">
-      <div class="map-page-header">
-        <h2>🗺 地図</h2>
-        <div class="map-filter-row">
-          <button class="map-filter-btn active" data-mfilter="collected">✅ 取得済み</button>
-          <button class="map-filter-btn" data-mfilter="all">📋 すべて</button>
-        </div>
-      </div>
-      <div id="map-pin-count"></div>
-      <div id="map-container"></div>
     </div>
 
     <!-- ===== 一覧 ===== -->
@@ -243,10 +228,6 @@
     <button class="tab-item" data-view="list">
       <span class="tab-icon">📋</span>
       <span class="tab-label">登録</span>
-    </button>
-    <button class="tab-item" data-view="map">
-      <span class="tab-icon">🗺</span>
-      <span class="tab-label">地図</span>
     </button>
     <button class="tab-item" data-view="gallery">
       <span class="tab-icon">📸</span>

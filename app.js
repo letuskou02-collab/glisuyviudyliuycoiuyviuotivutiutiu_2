@@ -16,7 +16,6 @@ let currentPhotos = [];
 let tapTimers = {};
 let currentView = 'menu';
 let mapInstance = null;
-let mapFilter = 'collected';
 
 // === データ管理 ===
 function loadData() {
@@ -412,20 +411,20 @@ function switchView(view) {
   currentView = view;
   document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.tab-item').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
-  // view-mapはdisplay:flexが必要なので明示する
   const pageEl = document.getElementById('view-' + view);
-  pageEl.style.display = view === 'map' ? 'flex' : '';
+  pageEl.style.display = '';
   // メニュー画面時はボトムタブを隠す
   document.querySelector('.bottom-tab-bar').style.display = view === 'menu' ? 'none' : '';
-  if (view === 'map') {
-    // display変更後にブラウザのレイアウトを待ってから初期化
-    setTimeout(() => initMap(), 50);
+  if (view === 'home') {
+    // ホーム表示時に地図サイズを再計算
+    setTimeout(() => initHomeMap(), 100);
   }
 }
 
 // === 地図 ===
-function initMap() {
-  const container = document.getElementById('map-container');
+function initHomeMap() {
+  const container = document.getElementById('home-map-container');
+  if (!container) return;
   if (!mapInstance) {
     mapInstance = L.map(container, { zoomControl: true }).setView([36.5, 137.0], 5);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -434,14 +433,13 @@ function initMap() {
     }).addTo(mapInstance);
     mapInstance._markerLayer = L.layerGroup().addTo(mapInstance);
   } else {
-    // 再表示時は必ずサイズ再計算
     mapInstance.invalidateSize({ animate: false });
   }
   mapInstance._markerLayer.clearLayers();
 
   const pins = [];
   Object.entries(collectedData).forEach(([id, d]) => {
-    if (mapFilter === 'collected' && !d.collected) return;
+    if (!d.collected) return;
     if (d.lat == null || d.lng == null) return;
     const lat = parseFloat(d.lat), lng = parseFloat(d.lng);
     if (isNaN(lat) || isNaN(lng)) return;
@@ -449,7 +447,7 @@ function initMap() {
     if (!route) return;
     const icon = L.divIcon({
       className: '',
-      html: `<div style="background:${d.collected?'#0055c8':'#888'};color:white;font-size:10px;font-weight:700;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${id}</div>`,
+      html: `<div style="background:#0055c8;color:white;font-size:10px;font-weight:700;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${id}</div>`,
       iconSize: [28, 28], iconAnchor: [14, 14]
     });
     const photoHtml = (d.photos && d.photos.length > 0)
@@ -457,7 +455,7 @@ function initMap() {
       : '';
     const marker = L.marker([lat, lng], { icon }).addTo(mapInstance._markerLayer);
     marker.bindPopup(
-      `<b>国道${id}号</b> ${d.collected?'✅':'<span style="color:#888">未取得</span>'}<br>` +
+      `<b>国道${id}号</b> ✅<br>` +
       `<small style="color:#666">${route.region}　${route.from}→${route.to}</small><br>` +
       (d.location ? `📍 ${d.location}<br>` : '') +
       (d.date ? `📅 ${d.date}<br>` : '') +
@@ -467,8 +465,6 @@ function initMap() {
     );
     pins.push([lat, lng]);
   });
-  const countEl = document.getElementById('map-pin-count');
-  if (countEl) countEl.textContent = pins.length > 0 ? `${pins.length}件を表示中` : '緯度経度が登録されたデータがありません';
   if (pins.length === 1) mapInstance.setView(pins[0], 12);
   else if (pins.length > 1) mapInstance.fitBounds(pins, { padding: [40, 40], maxZoom: 13 });
 }
@@ -478,15 +474,6 @@ function setupEvents() {
   // ボトムタブ
   document.querySelectorAll('.tab-item').forEach(btn => {
     btn.addEventListener('click', () => switchView(btn.dataset.view));
-  });
-
-  // 地図フィルタ
-  document.querySelectorAll('.map-filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      mapFilter = btn.dataset.mfilter;
-      document.querySelectorAll('.map-filter-btn').forEach(b => b.classList.toggle('active', b.dataset.mfilter === mapFilter));
-      if (currentView === 'map') initMap();
-    });
   });
 
   // 検索
@@ -605,5 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('view-menu').style.display = '';
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 
+  // ホーム地図の初期化（メニューから遷移後に呼ばれるが念のため遅延呼び出し）
+  // 実際の初期化はhomeビューに切り替えた際にswitchView経由で行われる
   registerSW();
 });

@@ -73,12 +73,7 @@ input, select, textarea { font-family: inherit; }
   width: 100%;
   min-height: calc(100dvh - 60px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
 }
-#view-map {
-  flex-direction: column;
-  height: calc(100dvh - 60px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
-  min-height: 0;
-}
-/* JSでdisplay:flexをセットするためdisplayはCSSに書かない */
+
 
 /* ===================================================
    メニュー（初回起動）
@@ -507,47 +502,22 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* ===================================================
-   地図
+   ホーム内埋め込み地図
    =================================================== */
-.map-page-header {
-  background: #003087;
-  color: white;
-  padding: 14px 16px 0;
-  position: sticky;
-  top: 0;
-  z-index: 50;
+.home-section-map {
+  padding: 0 0 16px;
 }
-.map-page-header h2 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
-.map-filter-row {
-  display: flex;
-  gap: 8px;
-  padding-bottom: 12px;
+.home-section-map .home-section-title {
+  padding: 0 16px 10px;
 }
-.map-filter-btn {
-  padding: 5px 16px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  background: rgba(255,255,255,0.2);
-  color: white;
-  transition: background 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.map-filter-btn.active { background: white; color: #0055c8; }
-
-#map-pin-count {
-  font-size: 12px;
-  color: #8e8e93;
-  padding: 8px 16px;
-  text-align: center;
-  background: white;
-  flex-shrink: 0;
-}
-#map-container {
-  width: 100%;
-  flex: 1;
-  min-height: 0;
+#home-map-container {
+  width: calc(100% - 32px);
+  height: 260px;
+  margin: 0 16px;
+  border-radius: 14px;
+  overflow: hidden;
   background: #e8f0fe;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
 }
 
 /* ===================================================
