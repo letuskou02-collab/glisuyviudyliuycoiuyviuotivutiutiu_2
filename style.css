@@ -613,3 +613,18 @@ body {
   border-color: var(--primary-light);
   color: var(--primary);
 }
+
+/* ジオコーディングボタン */
+.btn-geocode {
+  padding: 0 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  font-size: 1.05rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.btn-geocode:hover { background: #e8f4fd; border-color: #7ab8e8; }
+.btn-geocode:disabled { opacity: 0.5; pointer-events: none; }

@@ -356,6 +356,12 @@ function setupEvents() {
   document.getElementById('fab-import').addEventListener('click', () => { importData(); closeFab(); });
   document.getElementById('fab-reset').addEventListener('click', () => { resetData(); closeFab(); });
 
+  // 施設名からジオコーディング
+  document.getElementById('btn-geocode').addEventListener('click', geocodeLocation);
+  document.getElementById('modal-location-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); geocodeLocation(); }
+  });
+
   // GPS ボタン
   document.getElementById('btn-gps').addEventListener('click', getLocation);
 
@@ -384,6 +390,41 @@ function setupEvents() {
   });
 }
 
+
+// === ジオコーディング（施設名→緯度経度） ===
+async function geocodeLocation() {
+  const input = document.getElementById('modal-location-input');
+  const query = input.value.trim();
+  if (!query) {
+    showToast('取得場所を入力してください', 'error');
+    return;
+  }
+  const btn = document.getElementById('btn-geocode');
+  btn.textContent = '⏳';
+  btn.disabled = true;
+
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&q=' + encodeURIComponent(query);
+    const res = await fetch(url, { headers: { 'Accept-Language': 'ja' } });
+    if (!res.ok) throw new Error('network error');
+    const data = await res.json();
+    if (data.length === 0) {
+      showToast('施設が見つかりませんでした', 'error');
+      return;
+    }
+    const lat = Math.round(parseFloat(data[0].lat) * 1000000) / 1000000;
+    const lng = Math.round(parseFloat(data[0].lon) * 1000000) / 1000000;
+    document.getElementById('modal-lat-input').value = lat;
+    document.getElementById('modal-lng-input').value = lng;
+    updateMapLink(lat, lng);
+    showToast(`📍 緯度 ${lat} / 経度 ${lng}`, 'success');
+  } catch (e) {
+    showToast('検索に失敗しました（通信を確認してください）', 'error');
+  } finally {
+    btn.textContent = '🔍';
+    btn.disabled = false;
+  }
+}
 
 // === GPS取得 ===
 function getLocation() {
