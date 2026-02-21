@@ -515,9 +515,9 @@ input, select, textarea { font-family: inherit; }
   height: 260px;
   margin: 0 16px;
   border-radius: 14px;
-  overflow: hidden;
   background: #e8f0fe;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  z-index: 0;
 }
 
 /* ===================================================

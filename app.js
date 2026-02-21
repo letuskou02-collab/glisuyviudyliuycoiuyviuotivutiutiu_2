@@ -416,8 +416,8 @@ function switchView(view) {
   // メニュー画面時はボトムタブを隠す
   document.querySelector('.bottom-tab-bar').style.display = view === 'menu' ? 'none' : '';
   if (view === 'home') {
-    // ホーム表示時に地図サイズを再計算
-    setTimeout(() => initHomeMap(), 100);
+    // ホーム表示時に地図サイズを再計算（表示切り替え完了を待つ）
+    setTimeout(() => initHomeMap(), 200);
   }
 }
 
@@ -427,13 +427,16 @@ function initHomeMap() {
   if (!container) return;
   if (!mapInstance) {
     mapInstance = L.map(container, { zoomControl: true }).setView([36.5, 137.0], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19
+    L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+      attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+      maxZoom: 18
     }).addTo(mapInstance);
     mapInstance._markerLayer = L.layerGroup().addTo(mapInstance);
   } else {
-    mapInstance.invalidateSize({ animate: false });
+    // display:none から復帰後に必ずサイズ再計算とタイル再描画
+    setTimeout(() => {
+      mapInstance.invalidateSize({ animate: false });
+    }, 50);
   }
   mapInstance._markerLayer.clearLayers();
 
