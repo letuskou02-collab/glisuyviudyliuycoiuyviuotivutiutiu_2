@@ -859,9 +859,12 @@ function switchView(view) {
     });
   }
   if (view === 'shop') {
-    const iframe = document.getElementById('shop-iframe');
-    if (iframe.src === 'about:blank') {
-      iframe.src = 'https://vcountry.jp/kokudou/map/';
+    const btn = document.getElementById('btn-open-shop');
+    if (btn && !btn._bound) {
+      btn._bound = true;
+      btn.addEventListener('click', () => {
+        window.open('https://vcountry.jp/kokudou/map/', '_blank');
+      });
     }
   }
 }
