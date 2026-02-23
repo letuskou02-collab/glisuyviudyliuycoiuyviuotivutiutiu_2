@@ -36,12 +36,11 @@ input, select, textarea { font-family: inherit; }
 
 /* === スクロールエリア === */
 .app-body {
+  position: fixed;
+  inset: 0;
   width: 100%;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-  overflow-y: auto;
-  overflow-x: hidden;
-  height: 100dvh;
+  height: 100%;
+  overflow: hidden;
   background: #f2f2f7;
 }
 
@@ -131,8 +130,16 @@ input, select, textarea { font-family: inherit; }
 
 /* === ページ共通 === */
 .view-page {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  min-height: calc(100dvh - env(safe-area-inset-top, 0px) - 60px - env(safe-area-inset-bottom, 0px));
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   background: #f2f2f7;
 }
 
@@ -143,10 +150,8 @@ input, select, textarea { font-family: inherit; }
 .menu-page {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
   background: linear-gradient(160deg, #003087 0%, #0055c8 55%, #1a73e8 100%);
-  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
-  overflow-y: auto;
+  padding-bottom: 0;
 }
 .menu-hero {
   display: flex;
