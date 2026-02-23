@@ -365,148 +365,99 @@
 .mode-select-page {
   min-height: 100dvh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, #003087 0%, #0055c8 55%, #1976d2 100%);
-  overflow: hidden;
-  position: relative;
+  background: #fff;
   padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
-}
-/* 背景の円形装飾 */
-.mode-bg-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  pointer-events: none;
-}
-.mode-bg-circle-1 {
-  width: 380px;
-  height: 380px;
-  top: -120px;
-  right: -100px;
-}
-.mode-bg-circle-2 {
-  width: 280px;
-  height: 280px;
-  bottom: -80px;
-  left: -80px;
-  background: rgba(255,255,255,0.04);
+  overflow: hidden;
 }
 .mode-select-inner {
   width: 100%;
-  max-width: 400px;
-  padding: 32px 24px;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  position: relative;
-  z-index: 1;
 }
-/* ロゴエリア */
-.mode-logo-area {
+/* 上半分：青背景 + TRIPタイトル */
+.mode-title-area {
+  flex: 1;
+  background: #0055c8;
   display: flex;
   align-items: center;
-  gap: 14px;
+  justify-content: center;
 }
-.mode-logo-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.mode-logo-main {
-  font-size: 26px;
-  font-weight: 800;
+.mode-title-logo {
+  font-size: 56px;
+  font-weight: 900;
   color: #fff;
-  letter-spacing: 0.04em;
-  line-height: 1;
+  letter-spacing: 0.18em;
+  font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
 }
-.mode-logo-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.6);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-}
-/* キャッチコピー */
-.mode-catch {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.mode-catch-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0;
-  line-height: 1.2;
-}
-.mode-catch-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.55);
-  margin: 0;
-}
-/* 選択カードグループ */
+/* カードグループ：下半分 */
 .mode-cards {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  flex: 1;
 }
 .mode-card {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255,255,255,0.22);
-  border-radius: 20px;
-  padding: 18px 18px;
+  padding: 0 28px;
+  border: none;
   cursor: pointer;
   text-align: left;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.15s, background 0.15s;
+  transition: opacity 0.15s;
   width: 100%;
   box-sizing: border-box;
 }
-.mode-card:active {
-  transform: scale(0.97);
-  background: rgba(255,255,255,0.18);
+.mode-card-kokudo {
+  background: #fff;
+  border-top: 1px solid #e8e8e8;
 }
-/* バッジ */
+.mode-card-michi {
+  background: #0055c8;
+  border-top: 1px solid rgba(255,255,255,0.15);
+}
+.mode-card:active {
+  opacity: 0.7;
+}
 .mode-card-badge {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   border-radius: 14px;
   background: #0055c8;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
-.mode-card-badge-green {
-  background: #2e7d32;
+.mode-card-badge-white {
+  background: rgba(255,255,255,0.2);
 }
 .mode-card-badge-emoji {
-  font-size: 28px;
+  font-size: 26px;
   line-height: 1;
 }
-.mode-card-info {
-  flex: 1;
-  min-width: 0;
-}
 .mode-card-title {
-  font-size: 17px;
+  flex: 1;
+  font-size: 20px;
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 4px;
+  letter-spacing: 0.02em;
 }
-.mode-card-desc {
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  line-height: 1.4;
+.mode-card-kokudo .mode-card-title {
+  color: #0055c8;
+}
+.mode-card-michi .mode-card-title {
+  color: #fff;
 }
 .mode-card-arrow-icon {
-  color: rgba(255,255,255,0.5);
   flex-shrink: 0;
+}
+.mode-card-kokudo .mode-card-arrow-icon {
+  color: #0055c8;
+}
+.mode-card-michi .mode-card-arrow-icon {
+  color: rgba(255,255,255,0.7);
 }
