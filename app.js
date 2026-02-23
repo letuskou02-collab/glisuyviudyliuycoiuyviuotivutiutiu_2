@@ -926,10 +926,6 @@ function switchView(view) {
   document.querySelectorAll('.tab-item').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
   const pageEl = document.getElementById('view-' + view);
   pageEl.style.display = 'block';
-  // ページ切替時にスクロール位置をトップにリセット
-  const appBody = document.getElementById('app-body');
-  if (appBody) appBody.scrollTop = 0;
-  pageEl.scrollTop = 0;
   // メニュー画面時はボトムタブを隠す
   document.querySelector('.bottom-tab-bar').style.display = view === 'menu' ? 'none' : '';
   if (view === 'home') {
