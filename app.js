@@ -1209,34 +1209,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // アプリ選択画面のイベント
   document.getElementById('mode-card-kokudo').addEventListener('click', () => {
-    localStorage.setItem('app_mode', 'kokudo');
-    document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
-    document.getElementById('view-menu').style.display = 'block';
-    document.querySelector('.bottom-tab-bar').style.display = 'none';
+    switchView('home');
   });
   document.getElementById('mode-card-michinoeki').addEventListener('click', () => {
-    localStorage.setItem('app_mode', 'michinoeki');
     location.href = './michinoeki.html';
   });
 
   // その他ページの道の駅切り替えボタン
   document.getElementById('btn-switch-michinoeki').addEventListener('click', () => {
-    localStorage.setItem('app_mode', 'michinoeki');
     location.href = './michinoeki.html';
   });
 
-  // 起動時のモード判定
+  // 起動時：毎回選択画面を表示
   document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
   document.querySelector('.bottom-tab-bar').style.display = 'none';
-
-  const savedMode = localStorage.getItem('app_mode');
-  if (savedMode === 'kokudo') {
-    switchView('home');
-  } else if (savedMode === 'michinoeki') {
-    location.href = './michinoeki.html';
-  } else {
-    document.getElementById('view-mode-select').style.display = 'block';
-  }
+  document.getElementById('view-mode-select').style.display = 'block';
 
   registerSW();
 });

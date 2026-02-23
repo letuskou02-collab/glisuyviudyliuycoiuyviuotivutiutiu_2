@@ -350,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 国道ステッカーへ切り替え
   document.getElementById('michi-btn-switch-kokudo').addEventListener('click', () => {
-    localStorage.setItem('app_mode', 'kokudo');
     location.href = './index.html';
   });
 
