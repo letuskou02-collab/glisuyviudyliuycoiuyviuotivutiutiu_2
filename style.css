@@ -21,7 +21,7 @@ input, select, textarea { font-family: inherit; }
 /* === スクロールエリア === */
 .app-body {
   width: 100%;
-  padding-top: 0;
+  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overflow-x: hidden;
@@ -63,7 +63,7 @@ input, select, textarea { font-family: inherit; }
 /* === ページ共通 === */
 .view-page {
   width: 100%;
-  min-height: calc(100dvh - 60px - env(safe-area-inset-bottom,0px));
+  min-height: calc(100dvh - 60px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
 }
 
 
