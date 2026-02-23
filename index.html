@@ -25,6 +25,38 @@
   <main class="app-body" id="app-body">
 
     <!-- ===== メニュー（初回起動） ===== -->
+    <!-- ===== アプリ選択画面 ===== -->
+    <div id="view-mode-select" class="view-page mode-select-page" style="display:none">
+      <div class="mode-select-hero">
+        <h1 class="mode-select-title">どちらを記録しますか？</h1>
+        <p class="mode-select-sub">後からその他設定で切り替えられます</p>
+      </div>
+      <div class="mode-select-cards">
+        <button class="mode-card" id="mode-card-kokudo">
+          <div class="mode-card-icon">
+            <svg viewBox="0 0 120 130" width="64" height="70" xmlns="http://www.w3.org/2000/svg">
+              <path d="M60 4 L116 34 L116 126 L4 126 L4 34 Z" fill="white" />
+              <path d="M60 13 L108 40 L108 118 L12 118 L12 40 Z" fill="#005bac" />
+              <text x="60" y="97" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',sans-serif" font-weight="900" font-size="68" fill="white" letter-spacing="-2">1</text>
+            </svg>
+          </div>
+          <div class="mode-card-body">
+            <div class="mode-card-title">国道ステッカー</div>
+            <div class="mode-card-desc">全国の国道ステッカー収集を記録</div>
+          </div>
+          <span class="mode-card-arrow">›</span>
+        </button>
+        <button class="mode-card" id="mode-card-michinoeki">
+          <div class="mode-card-icon">🏪</div>
+          <div class="mode-card-body">
+            <div class="mode-card-title">道の駅</div>
+            <div class="mode-card-desc">全国の道の駅訪問を記録</div>
+          </div>
+          <span class="mode-card-arrow">›</span>
+        </button>
+      </div>
+    </div>
+
     <div id="view-menu" class="view-page menu-page" style="display:none">
       <div class="menu-hero">
         <div class="menu-logo">
@@ -224,6 +256,18 @@
             <div class="other-row-body">
               <div class="other-row-title">すべてリセット</div>
               <div class="other-row-desc">全記録を削除（元に戻せません）</div>
+            </div>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+
+        <div class="other-group-label">アプリ切り替え</div>
+        <div class="other-group">
+          <div class="other-row" id="btn-switch-michinoeki">
+            <span class="other-row-icon">🏪</span>
+            <div class="other-row-body">
+              <div class="other-row-title">道の駅記録へ切り替え</div>
+              <div class="other-row-desc">道の駅訪問記録アプリを開く</div>
             </div>
             <span class="arrow">›</span>
           </div>

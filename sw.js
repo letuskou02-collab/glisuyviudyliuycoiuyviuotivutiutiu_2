@@ -10,6 +10,9 @@ const ASSETS = [
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './michinoeki.html',
+  './michinoeki.js',
+  './michinoeki.css',
 ];
 
 self.addEventListener('install', (event) => {
