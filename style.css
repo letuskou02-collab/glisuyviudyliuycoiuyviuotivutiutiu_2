@@ -46,10 +46,8 @@ input, select, textarea { font-family: inherit; }
   position: fixed;
   bottom: 0;
   left: 0; right: 0;
-  /* タブバー本体 + セーフエリア分を確保 */
   height: calc(60px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  /* セーフエリア下まで背景を不透明で塗りつぶす */
   background: #ffffff;
   border-top: 1px solid rgba(0,0,0,0.12);
   display: flex;
@@ -58,15 +56,6 @@ input, select, textarea { font-family: inherit; }
   -webkit-transform: translateZ(0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-}
-/* セーフエリア下の余白を確実に白で塗る */
-.bottom-tab-bar::after {
-  content: '';
-  position: absolute;
-  bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
-  left: 0; right: 0;
-  height: env(safe-area-inset-bottom, 0px);
-  background: #ffffff;
 }
 .tab-item {
   flex: 1;
