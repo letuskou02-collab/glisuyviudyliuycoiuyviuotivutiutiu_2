@@ -364,12 +364,14 @@
 /* === アプリ選択画面 === */
 .mode-select-page {
   min-height: 100dvh;
-  display: flex;
   align-items: center;
   justify-content: center;
   background: #fff;
   padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
   overflow: hidden;
+}
+.mode-select-page[style*="block"] {
+  display: flex !important;
 }
 .mode-select-inner {
   width: 100%;

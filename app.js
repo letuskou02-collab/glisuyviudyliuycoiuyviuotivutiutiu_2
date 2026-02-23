@@ -1223,7 +1223,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 起動時：毎回選択画面を表示
   document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
   document.querySelector('.bottom-tab-bar').style.display = 'none';
-  document.getElementById('view-mode-select').style.display = 'block';
+  document.getElementById('view-mode-select').style.display = 'flex';
 
   registerSW();
 });
