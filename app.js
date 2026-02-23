@@ -1204,18 +1204,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 
   registerSW();
-
-  // iOSキーボード表示時にタブバーが浮き上がるのを防ぐ
-  if (window.visualViewport) {
-    const tabBar = document.querySelector('.bottom-tab-bar');
-    const fixTabBar = () => {
-      const vv = window.visualViewport;
-      // ビューポートの底辺 = offsetTop + height
-      // ウィンドウの底辺からのずれを bottom に反映
-      const offsetFromBottom = window.innerHeight - (vv.offsetTop + vv.height);
-      tabBar.style.bottom = Math.max(0, offsetFromBottom) + 'px';
-    };
-    window.visualViewport.addEventListener('resize', fixTabBar);
-    window.visualViewport.addEventListener('scroll', fixTabBar);
-  }
 });
