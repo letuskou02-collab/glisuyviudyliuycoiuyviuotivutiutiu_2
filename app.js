@@ -925,7 +925,7 @@ function switchView(view) {
   document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.tab-item').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
   const pageEl = document.getElementById('view-' + view);
-  pageEl.style.display = view === 'menu' ? 'flex' : 'block';
+  pageEl.style.display = 'block';
   // ページ切替時にスクロール位置をトップにリセット
   const appBody = document.getElementById('app-body');
   if (appBody) appBody.scrollTop = 0;
@@ -1292,8 +1292,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // 毎回メニューから起動（全ページ非表示→メニューのみ表示）
   document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
-  document.getElementById('view-menu').style.display = 'flex';
+  document.getElementById('view-menu').style.display = 'block';
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 
   registerSW();
+
+  // デバッグ: 実機のsafe-area-inset-bottomとタブバー位置を確認
+  setTimeout(() => {
+    const tab = document.querySelector('.bottom-tab-bar');
+    const rect = tab.getBoundingClientRect();
+    const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab') || 0);
+    const winH = window.innerHeight;
+    const msg = `winH:${winH} tabBottom:${rect.bottom.toFixed(1)} tabH:${rect.height.toFixed(1)} gap:${(winH - rect.bottom).toFixed(1)}px`;
+    alert(msg);
+  }, 1500);
 });
