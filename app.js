@@ -1113,9 +1113,36 @@ function setupEvents() {
 
 // === Service Worker ===
 function registerSW() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  }
+  if (!('serviceWorker' in navigator)) return;
+
+  navigator.serviceWorker.register('./sw.js').then((reg) => {
+    // 既存のSWがある状態で新SWが待機中になったとき
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        // 新SWがactivatedになり、かつ既存SWが存在していた場合 → 更新バナー表示
+        if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
+          showUpdateBanner();
+        }
+      });
+    });
+  }).catch(() => {});
+
+  // SW側からのメッセージ受信（activate後に送信される）
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data?.type === 'SW_UPDATED') showUpdateBanner();
+  });
+}
+
+function showUpdateBanner() {
+  const banner = document.getElementById('update-banner');
+  if (!banner || banner.style.display !== 'none') return;
+  banner.style.display = 'flex';
+  document.getElementById('update-banner-btn').addEventListener('click', () => {
+    banner.style.display = 'none';
+    window.location.reload();
+  });
 }
 
 // === 起動 ===

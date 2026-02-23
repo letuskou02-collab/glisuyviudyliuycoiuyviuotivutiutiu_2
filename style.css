@@ -1259,3 +1259,45 @@ input, select, textarea { font-family: inherit; }
   font-weight: 500;
 }
 .import-modal-cancel:active { background: #f2f2f7; }
+
+/* ===== 更新通知バナー ===== */
+.update-banner {
+  display: none;
+  position: fixed;
+  bottom: 72px; /* タブバーの上 */
+  left: 12px;
+  right: 12px;
+  background: #003087;
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 900;
+  box-shadow: 0 4px 16px rgba(0,48,135,0.35);
+  animation: bannerSlideUp 0.3s ease;
+}
+@keyframes bannerSlideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+.update-banner-text {
+  font-size: 14px;
+  font-weight: 600;
+}
+.update-banner-btn {
+  background: #fff;
+  color: #003087;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.update-banner-btn:active {
+  opacity: 0.8;
+}

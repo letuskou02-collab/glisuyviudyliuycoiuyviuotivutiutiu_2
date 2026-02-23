@@ -1,4 +1,5 @@
-const CACHE_NAME = 'kokudo-sticker-v2';
+// ビルド時に自動更新される（デプロイのたびに変わる）
+const CACHE_NAME = 'kokudo-sticker-20260223142558';
 const ASSETS = [
   './',
   './index.html',
@@ -22,7 +23,12 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    ).then(() => {
+      // 更新があった場合、全クライアントに通知
+      return self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED' }));
+      });
+    })
   );
   self.clients.claim();
 });
