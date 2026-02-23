@@ -1231,7 +1231,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const savedMode = localStorage.getItem('app_mode');
   if (savedMode === 'kokudo') {
-    document.getElementById('view-menu').style.display = 'block';
+    switchView('home');
   } else if (savedMode === 'michinoeki') {
     location.href = './michinoeki.html';
   } else {

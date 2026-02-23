@@ -27,36 +27,64 @@
     <!-- ===== メニュー（初回起動） ===== -->
     <!-- ===== アプリ選択画面 ===== -->
     <div id="view-mode-select" class="view-page mode-select-page" style="display:none">
-      <div class="mode-select-hero">
-        <h1 class="mode-select-title">どちらを記録しますか？</h1>
-        <p class="mode-select-sub">後からその他設定で切り替えられます</p>
-      </div>
-      <div class="mode-select-cards">
-        <button class="mode-card" id="mode-card-kokudo">
-          <div class="mode-card-icon">
-            <svg viewBox="0 0 120 130" width="64" height="70" xmlns="http://www.w3.org/2000/svg">
-              <path d="M60 4 L116 34 L116 126 L4 126 L4 34 Z" fill="white" />
-              <path d="M60 13 L108 40 L108 118 L12 118 L12 40 Z" fill="#005bac" />
-              <text x="60" y="97" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',sans-serif" font-weight="900" font-size="68" fill="white" letter-spacing="-2">1</text>
+      <!-- 背景装飾 -->
+      <div class="mode-bg-circle mode-bg-circle-1"></div>
+      <div class="mode-bg-circle mode-bg-circle-2"></div>
+
+      <div class="mode-select-inner">
+        <!-- ロゴエリア -->
+        <div class="mode-logo-area">
+          <svg viewBox="0 0 120 130" width="72" height="78" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60 4 L116 34 L116 126 L4 126 L4 34 Z" fill="rgba(255,255,255,0.25)" />
+            <path d="M60 13 L108 40 L108 118 L12 118 L12 40 Z" fill="white" />
+            <text x="60" y="97" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',sans-serif" font-weight="900" font-size="68" fill="#0055c8" letter-spacing="-2">1</text>
+          </svg>
+          <div class="mode-logo-text">
+            <div class="mode-logo-main">Collection</div>
+            <div class="mode-logo-sub">記録アプリ</div>
+          </div>
+        </div>
+
+        <!-- キャッチコピー -->
+        <div class="mode-catch">
+          <h1 class="mode-catch-title">何を記録しますか？</h1>
+          <p class="mode-catch-sub">後から設定で切り替えられます</p>
+        </div>
+
+        <!-- 選択カード -->
+        <div class="mode-cards">
+          <button class="mode-card mode-card-kokudo" id="mode-card-kokudo">
+            <div class="mode-card-badge">
+              <svg viewBox="0 0 120 130" width="44" height="48" xmlns="http://www.w3.org/2000/svg">
+                <path d="M60 4 L116 34 L116 126 L4 126 L4 34 Z" fill="rgba(255,255,255,0.3)" />
+                <path d="M60 13 L108 40 L108 118 L12 118 L12 40 Z" fill="white" />
+                <text x="60" y="97" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',sans-serif" font-weight="900" font-size="68" fill="#0055c8" letter-spacing="-2">1</text>
+              </svg>
+            </div>
+            <div class="mode-card-info">
+              <div class="mode-card-title">国道ステッカー</div>
+              <div class="mode-card-desc">全国の国道ステッカー収集を記録</div>
+            </div>
+            <svg class="mode-card-arrow-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
             </svg>
-          </div>
-          <div class="mode-card-body">
-            <div class="mode-card-title">国道ステッカー</div>
-            <div class="mode-card-desc">全国の国道ステッカー収集を記録</div>
-          </div>
-          <span class="mode-card-arrow">›</span>
-        </button>
-        <button class="mode-card" id="mode-card-michinoeki">
-          <div class="mode-card-icon">🏪</div>
-          <div class="mode-card-body">
-            <div class="mode-card-title">道の駅</div>
-            <div class="mode-card-desc">全国の道の駅訪問を記録</div>
-          </div>
-          <span class="mode-card-arrow">›</span>
-        </button>
+          </button>
+
+          <button class="mode-card mode-card-michi" id="mode-card-michinoeki">
+            <div class="mode-card-badge mode-card-badge-green">
+              <span class="mode-card-badge-emoji">��</span>
+            </div>
+            <div class="mode-card-info">
+              <div class="mode-card-title">道の駅</div>
+              <div class="mode-card-desc">全国の道の駅訪問を記録</div>
+            </div>
+            <svg class="mode-card-arrow-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
-
     <div id="view-menu" class="view-page menu-page" style="display:none">
       <div class="menu-hero">
         <div class="menu-logo">
