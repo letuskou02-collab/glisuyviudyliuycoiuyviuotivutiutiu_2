@@ -571,6 +571,26 @@ function resetData() {
   showToast('データをリセットしました');
 }
 
+async function clearCache() {
+  if (!confirm('アプリのキャッシュを削除します。\n次回起動時に最新版を再取得します。\nよろしいですか？')) return;
+  try {
+    // Service Worker の登録を解除
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    // キャッシュストレージを全削除
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+    showToast('キャッシュを削除しました。再起動します…', 'success');
+    setTimeout(() => window.location.reload(), 1200);
+  } catch (e) {
+    showToast('キャッシュの削除に失敗しました', 'error');
+  }
+}
+
 // コンビニ等チェーン名の略称→正式名 正規化テーブル
 const CHAIN_NORMALIZE = [
   [/^セブン(?!イレブン)/, 'セブンイレブン'],
@@ -1071,6 +1091,7 @@ function setupEvents() {
   document.getElementById('btn-export').addEventListener('click', exportData);
   document.getElementById('btn-import').addEventListener('click', importData);
   document.getElementById('btn-reset').addEventListener('click', resetData);
+  document.getElementById('btn-clear-cache').addEventListener('click', clearCache);
 
   // インポートモーダルのボタン
   document.getElementById('import-btn-merge').addEventListener('click', applyImportMerge);
