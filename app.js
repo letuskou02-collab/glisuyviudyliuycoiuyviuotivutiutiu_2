@@ -393,6 +393,7 @@ function openDetail(id) {
   });
 
   document.getElementById('detail-overlay').classList.add('open');
+  document.body.classList.add('modal-open');
 }
 
 function _updateDetailStatus(id, d) {
@@ -421,6 +422,7 @@ function _updateDetailStatus(id, d) {
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   activeDetailId = null;
+  document.body.classList.remove('modal-open');
 }
 
 // wikitextのマークアップを平文に変換
@@ -527,6 +529,7 @@ function openModal(id) {
   renderPhotoGrid();
 
   document.getElementById('modal-overlay').classList.add('open');
+  document.body.classList.add('modal-open');
 }
 
 function closeModal(save = true) {
@@ -545,6 +548,7 @@ function closeModal(save = true) {
   }
   document.getElementById('modal-overlay').classList.remove('open');
   activeModalId = null;
+  document.body.classList.remove('modal-open');
 }
 
 // === エクスポート / インポート / リセット ===
@@ -585,10 +589,12 @@ function importData() {
 
 function openImportModal() {
   document.getElementById('import-modal-overlay').classList.add('open');
+  document.body.classList.add('modal-open');
 }
 function closeImportModal() {
   document.getElementById('import-modal-overlay').classList.remove('open');
   _importPending = null;
+  document.body.classList.remove('modal-open');
 }
 
 function applyImportMerge() {
