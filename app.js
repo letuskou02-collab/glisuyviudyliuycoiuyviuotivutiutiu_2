@@ -10,6 +10,7 @@ let currentFilter = 'all';
 let currentRegion = '';
 let currentType = '';
 let currentSort = 'number-asc';
+let gallerySortOrder = 'date-desc';
 let searchQuery = '';
 let isListView = false;
 let activeModalId = null;
@@ -250,14 +251,39 @@ function buildGallery() {
   const container = document.getElementById('gallery-container');
   container.innerHTML = '';
 
-  // 取得済みのみ、日付降順
-  let items = KOKUDO_ROUTES
-    .filter(r => getRouteData(r.id).collected)
-    .sort((a, b) => {
-      const da = getRouteData(a.id).date || '';
-      const db = getRouteData(b.id).date || '';
-      return db.localeCompare(da);
-    });
+  // 取得済みのみ
+  let items = KOKUDO_ROUTES.filter(r => getRouteData(r.id).collected);
+
+  // ソート
+  switch (gallerySortOrder) {
+    case 'date-desc':
+      items.sort((a, b) => {
+        const da = getRouteData(a.id).date || '';
+        const db = getRouteData(b.id).date || '';
+        return db.localeCompare(da) || a.id - b.id;
+      });
+      break;
+    case 'date-asc':
+      items.sort((a, b) => {
+        const da = getRouteData(a.id).date || '';
+        const db = getRouteData(b.id).date || '';
+        return da.localeCompare(db) || a.id - b.id;
+      });
+      break;
+    case 'number-asc':
+      items.sort((a, b) => a.id - b.id);
+      break;
+    case 'number-desc':
+      items.sort((a, b) => b.id - a.id);
+      break;
+    case 'pref-asc':
+      items.sort((a, b) => {
+        const pa = getPrefOrder(a);
+        const pb = getPrefOrder(b);
+        return pa !== pb ? pa - pb : a.id - b.id;
+      });
+      break;
+  }
 
   // 番号検索
   if (q !== '') {
@@ -1061,6 +1087,9 @@ function setupEvents() {
 
   // ギャラリー検索
   document.getElementById('gallery-search-input').addEventListener('input', () => buildGallery());
+  document.getElementById('gallery-sort-select').addEventListener('change', (e) => {
+    gallerySortOrder = e.target.value; buildGallery();
+  });
 
   // フィルタタブ
   document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1078,9 +1107,6 @@ function setupEvents() {
   });
   document.getElementById('type-select').addEventListener('change', (e) => {
     currentType = e.target.value; renderRoutes();
-  });
-  document.getElementById('sort-select').addEventListener('change', (e) => {
-    currentSort = e.target.value; renderRoutes();
   });
 
   // グリッド/リスト切替
