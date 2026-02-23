@@ -16,21 +16,21 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
+  // skipWaiting() を呼ばず、waiting状態で待機する（バナー表示待ち）
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    ).then(() => {
-      // 更新があった場合、全クライアントに通知
-      return self.clients.matchAll({ type: 'window' }).then((clients) => {
-        clients.forEach((client) => client.postMessage({ type: 'SW_UPDATED' }));
-      });
-    })
+    )
   );
   self.clients.claim();
+});
+
+// アプリ側から SKIP_WAITING メッセージを受けたら即時切り替え
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {

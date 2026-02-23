@@ -1116,32 +1116,41 @@ function registerSW() {
   if (!('serviceWorker' in navigator)) return;
 
   navigator.serviceWorker.register('./sw.js').then((reg) => {
-    // 既存のSWがある状態で新SWが待機中になったとき
+    // 起動時すでに waiting 状態のSWがある場合（タブが長時間開いたままの場合など）
+    if (reg.waiting && navigator.serviceWorker.controller) {
+      showUpdateBanner(reg.waiting);
+    }
+
+    // 新しいSWがインストールされ始めたとき
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
       if (!newWorker) return;
       newWorker.addEventListener('statechange', () => {
-        // 新SWがactivatedになり、かつ既存SWが存在していた場合 → 更新バナー表示
-        if (newWorker.state === 'activated' && navigator.serviceWorker.controller) {
-          showUpdateBanner();
+        // installed（=waiting）になり、かつ既存SWあり → バナー表示
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner(newWorker);
         }
       });
     });
   }).catch(() => {});
 
-  // SW側からのメッセージ受信（activate後に送信される）
-  navigator.serviceWorker.addEventListener('message', (e) => {
-    if (e.data?.type === 'SW_UPDATED') showUpdateBanner();
+  // SWがskipWaitingした後に全ページをリロード
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
   });
 }
 
-function showUpdateBanner() {
+function showUpdateBanner(newWorker) {
   const banner = document.getElementById('update-banner');
   if (!banner || banner.style.display !== 'none') return;
   banner.style.display = 'flex';
   document.getElementById('update-banner-btn').addEventListener('click', () => {
     banner.style.display = 'none';
-    window.location.reload();
+    // SWにSKIP_WAITINGを送信 → controllerchangeイベントで自動リロード
+    newWorker.postMessage({ type: 'SKIP_WAITING' });
   });
 }
 
