@@ -146,8 +146,18 @@ function createRouteCard(route) {
       <div class="route-num">${route.id}</div>
       <div class="route-label">号</div>
     `;
+    card.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      card._touchStartX = t.clientX;
+      card._touchStartY = t.clientY;
+    }, { passive: true });
     card.addEventListener('touchend', (e) => {
       const id = route.id;
+      const t = e.changedTouches[0];
+      const dx = Math.abs(t.clientX - (card._touchStartX || 0));
+      const dy = Math.abs(t.clientY - (card._touchStartY || 0));
+      // 10px以上動いていたらスクロールとみなしてタップ判定しない
+      if (dx > 10 || dy > 10) return;
       if (tapTimers[id]) {
         clearTimeout(tapTimers[id]);
         delete tapTimers[id];
