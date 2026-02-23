@@ -1296,14 +1296,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 
   registerSW();
-
-  // デバッグ: 実機のsafe-area-inset-bottomとタブバー位置を確認
-  setTimeout(() => {
-    const tab = document.querySelector('.bottom-tab-bar');
-    const rect = tab.getBoundingClientRect();
-    const safeBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sab') || 0);
-    const winH = window.innerHeight;
-    const msg = `winH:${winH} tabBottom:${rect.bottom.toFixed(1)} tabH:${rect.height.toFixed(1)} gap:${(winH - rect.bottom).toFixed(1)}px`;
-    alert(msg);
-  }, 1500);
 });
