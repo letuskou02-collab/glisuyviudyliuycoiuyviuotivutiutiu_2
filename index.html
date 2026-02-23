@@ -233,6 +233,19 @@
       </div>
     </div>
 
+    <!-- 販売店マップ -->
+    <div id="view-shop" class="view-page shop-page" style="display:none">
+      <div class="page-header">
+        <h2>🛒 販売店マップ</h2>
+      </div>
+      <iframe
+        id="shop-iframe"
+        src="about:blank"
+        class="shop-iframe"
+        allowfullscreen
+      ></iframe>
+    </div>
+
   </main>
 
   <!-- ボトムタブバー -->
@@ -248,6 +261,10 @@
     <button class="tab-item" data-view="gallery">
       <span class="tab-icon">📸</span>
       <span class="tab-label">一覧</span>
+    </button>
+    <button class="tab-item" data-view="shop">
+      <span class="tab-icon">🛒</span>
+      <span class="tab-label">販売店</span>
     </button>
     <button class="tab-item" data-view="other">
       <span class="tab-icon">⚙</span>

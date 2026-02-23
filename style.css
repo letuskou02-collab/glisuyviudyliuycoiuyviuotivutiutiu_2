@@ -76,6 +76,27 @@ input, select, textarea { font-family: inherit; }
 .tab-item.active { color: #0055c8; }
 .tab-item:active { opacity: 0.6; }
 
+/* === 販売店マップ === */
+.shop-page {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0; right: 0;
+  bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+}
+.shop-page .page-header {
+  flex-shrink: 0;
+}
+.shop-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  display: block;
+  min-height: 0;
+}
+
 /* === ページ共通 === */
 .view-page {
   width: 100%;

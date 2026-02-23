@@ -858,6 +858,12 @@ function switchView(view) {
       requestAnimationFrame(() => initHomeMap());
     });
   }
+  if (view === 'shop') {
+    const iframe = document.getElementById('shop-iframe');
+    if (iframe.src === 'about:blank') {
+      iframe.src = 'https://vcountry.jp/kokudou/map/';
+    }
+  }
 }
 
 // === 地図ピッカー ===
