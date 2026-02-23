@@ -1,19 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- 背景 -->
-  <rect width="512" height="512" rx="80" fill="#1a6b2f"/>
-  <!-- 道路 -->
-  <rect x="60" y="240" width="392" height="32" rx="6" fill="#555"/>
-  <rect x="60" y="240" width="392" height="32" rx="6" fill="#666"/>
-  <!-- センターライン -->
-  <rect x="100" y="252" width="60" height="8" rx="4" fill="#f5c060"/>
-  <rect x="220" y="252" width="60" height="8" rx="4" fill="#f5c060"/>
-  <rect x="340" y="252" width="60" height="8" rx="4" fill="#f5c060"/>
-  <!-- 盾形（国道標識） -->
-  <path d="M256 80 L330 120 L330 210 Q330 240 256 260 Q182 240 182 210 L182 120 Z" fill="#fff" stroke="#1a6b2f" stroke-width="8"/>
-  <path d="M256 95 L318 130 L318 208 Q318 232 256 248 Q194 232 194 208 L194 130 Z" fill="#1a6b2f"/>
-  <!-- 国 文字 -->
-  <text x="256" y="190" font-family="'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" font-size="68" font-weight="900" fill="#fff" text-anchor="middle" dominant-baseline="middle">国</text>
-  <!-- 下部テキスト -->
-  <text x="256" y="340" font-family="'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" font-size="44" font-weight="700" fill="#f5c060" text-anchor="middle">ステッカー</text>
-  <text x="256" y="400" font-family="'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif" font-size="32" font-weight="600" fill="rgba(255,255,255,0.8)" text-anchor="middle">コレクション</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="200" height="220">
+  <!-- 外枠（白） -->
+  <path d="M100 8 L192 58 L192 212 L8 212 L8 58 Z" rx="18" ry="18"
+        fill="white" stroke="white" stroke-width="2"
+        style="filter:drop-shadow(0 2px 8px rgba(0,0,0,0.18))"/>
+  <!-- 外枠ストローク（白の縁取り） -->
+  <path d="M100 8 L192 58 L192 212 L8 212 L8 58 Z"
+        fill="none" stroke="white" stroke-width="14" stroke-linejoin="round"/>
+  <!-- 本体（青） -->
+  <path d="M100 22 L180 66 L180 198 L20 198 L20 66 Z"
+        fill="#0057a8" stroke="#0057a8" stroke-width="2" stroke-linejoin="round"/>
+  <!-- 国道テキスト -->
+  <text x="100" y="80" text-anchor="middle"
+        font-family="'Hiragino Sans','Yu Gothic','Meiryo',sans-serif"
+        font-weight="700" font-size="28" fill="white" letter-spacing="6">国　道</text>
+  <!-- 路線番号 -->
+  <text x="100" y="158" text-anchor="middle"
+        font-family="'Arial Black','Helvetica Neue',sans-serif"
+        font-weight="900" font-size="100" fill="white" letter-spacing="-4">1</text>
+  <!-- ROUTEテキスト -->
+  <text x="100" y="188" text-anchor="middle"
+        font-family="'Arial Black','Helvetica Neue',sans-serif"
+        font-weight="700" font-size="20" fill="white" letter-spacing="4">ROUTE</text>
 </svg>
