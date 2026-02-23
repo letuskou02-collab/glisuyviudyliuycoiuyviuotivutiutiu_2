@@ -18,18 +18,10 @@ body {
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
 input, select, textarea { font-family: inherit; }
 
-/* === ステータスバー埋め === */
-.status-bar-fill {
-  height: env(safe-area-inset-top, 0px);
-  background: #003087;
-  top: 0; left: 0; right: 0;
-  z-index: 100;
-}
-
 /* === スクロールエリア === */
 .app-body {
   width: 100%;
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: 0;
   padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overflow-x: hidden;
@@ -71,7 +63,7 @@ input, select, textarea { font-family: inherit; }
 /* === ページ共通 === */
 .view-page {
   width: 100%;
-  min-height: calc(100dvh - 60px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+  min-height: calc(100dvh - 60px - env(safe-area-inset-bottom,0px));
 }
 
 
