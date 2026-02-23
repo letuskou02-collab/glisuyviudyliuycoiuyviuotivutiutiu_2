@@ -9,6 +9,7 @@ let collectedData = {};
 let currentFilter = 'all';
 let currentRegion = '';
 let currentType = '';
+let currentSort = 'number-asc';
 let searchQuery = '';
 let isListView = false;
 let activeModalId = null;
@@ -45,9 +46,51 @@ function showToast(msg, type = 'default') {
   toastTimer = setTimeout(() => { t.className = 'toast'; }, 2200);
 }
 
+// 都道府県の五十音順インデックス
+const PREF_ORDER = ['北海道','青森','岩手','宮城','秋田','山形','福島','茨城','栃木','群馬','埼玉','千葉','東京','神奈川','新潟','富山','石川','福井','山梨','長野','岐阜','静岡','愛知','三重','滋賀','京都','大阪','兵庫','奈良','和歌山','鳥取','島根','岡山','広島','山口','徳島','香川','愛媛','高知','福岡','佐賀','長崎','熊本','大分','宮崎','鹿児島','沖縄'];
+
+function getPrefOrder(route) {
+  const from = route.from || '';
+  const idx = PREF_ORDER.findIndex(p => from.includes(p));
+  return idx === -1 ? 99 : idx;
+}
+
+function getSortedRoutes(routes) {
+  const arr = [...routes];
+  switch (currentSort) {
+    case 'number-asc':
+      return arr.sort((a, b) => a.id - b.id);
+    case 'number-desc':
+      return arr.sort((a, b) => b.id - a.id);
+    case 'date-desc':
+      return arr.sort((a, b) => {
+        const da = getRouteData(a.id).date || '';
+        const db = getRouteData(b.id).date || '';
+        if (db !== da) return db.localeCompare(da);
+        return a.id - b.id;
+      });
+    case 'date-asc':
+      return arr.sort((a, b) => {
+        const da = getRouteData(a.id).date || '';
+        const db = getRouteData(b.id).date || '';
+        if (da !== db) return da.localeCompare(db);
+        return a.id - b.id;
+      });
+    case 'pref-asc':
+      return arr.sort((a, b) => {
+        const pa = getPrefOrder(a);
+        const pb = getPrefOrder(b);
+        if (pa !== pb) return pa - pb;
+        return a.id - b.id;
+      });
+    default:
+      return arr;
+  }
+}
+
 // === フィルタ ===
 function getFilteredRoutes() {
-  return KOKUDO_ROUTES.filter((r) => {
+  const filtered = KOKUDO_ROUTES.filter((r) => {
     const d = getRouteData(r.id);
     if (currentFilter === 'collected' && !d.collected) return false;
     if (currentFilter === 'not-collected' && d.collected) return false;
@@ -59,6 +102,7 @@ function getFilteredRoutes() {
     }
     return true;
   });
+  return getSortedRoutes(filtered);
 }
 
 // === 統計更新 ===
@@ -1034,6 +1078,9 @@ function setupEvents() {
   });
   document.getElementById('type-select').addEventListener('change', (e) => {
     currentType = e.target.value; renderRoutes();
+  });
+  document.getElementById('sort-select').addEventListener('change', (e) => {
+    currentSort = e.target.value; renderRoutes();
   });
 
   // グリッド/リスト切替

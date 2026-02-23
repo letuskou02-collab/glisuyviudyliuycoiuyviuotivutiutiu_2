@@ -387,6 +387,9 @@ input, select, textarea { font-family: inherit; }
   -webkit-appearance: none;
   appearance: none;
 }
+.select-row + .select-row {
+  padding-top: 0;
+}
 
 .toolbar-right {
   display: flex;
