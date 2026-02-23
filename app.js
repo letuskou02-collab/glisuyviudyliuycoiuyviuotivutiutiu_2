@@ -267,16 +267,17 @@ function openDetail(id) {
   document.getElementById('detail-route-type').textContent =
     `${route.region}　／　${route.type}国道`;
 
-  // 路線情報
+  // 路線情報（まず routes.js の値で表示、Wiki取得後に更新）
   document.getElementById('detail-from').textContent = route.from;
   document.getElementById('detail-to').textContent = route.to;
   document.getElementById('detail-region').textContent = route.region;
   document.getElementById('detail-length').textContent = '取得中…';
+  document.getElementById('detail-length').className = 'detail-info-value loading';
 
   // 取得状況
   _updateDetailStatus(id, d);
 
-  // Wikipedia 概要＋延長（非同期）
+  // Wikipedia infobox から起点・終点・延長・概要（非同期）
   const wikiSec = document.getElementById('detail-wiki-section');
   const wikiText = document.getElementById('detail-wiki-text');
   const wikiLink = document.getElementById('detail-wiki-link');
@@ -285,7 +286,18 @@ function openDetail(id) {
   wikiText.classList.remove('expanded');
   fetchRouteWikiInfo(id).then(info => {
     if (info) {
-      if (info.length) document.getElementById('detail-length').textContent = info.length;
+      // 起点・終点：Wikiの詳細があれば上書き
+      if (info.from) document.getElementById('detail-from').textContent = info.from;
+      if (info.to)   document.getElementById('detail-to').textContent   = info.to;
+      if (info.length) {
+        const el = document.getElementById('detail-length');
+        el.textContent = info.length;
+        el.className = 'detail-info-value';
+      } else {
+        const el = document.getElementById('detail-length');
+        el.textContent = '—';
+        el.className = 'detail-info-value';
+      }
       if (info.extract) {
         wikiText.textContent = info.extract;
         wikiLink.href = `https://ja.wikipedia.org/wiki/国道${id}号`;
@@ -294,7 +306,9 @@ function openDetail(id) {
         wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
       }
     } else {
-      document.getElementById('detail-length').textContent = '—';
+      const el = document.getElementById('detail-length');
+      el.textContent = '—';
+      el.className = 'detail-info-value';
     }
   });
 
@@ -329,30 +343,72 @@ function closeDetail() {
   activeDetailId = null;
 }
 
+// wikitextのマークアップを平文に変換
+function _cleanWikitext(s) {
+  for (let i = 0; i < 8; i++) {
+    const prev = s;
+    s = s.replace(/\[\[[^\[\]]*\|([^\[\]]*)\]\]/g, '$1'); // [[X|Y]] → Y
+    s = s.replace(/\[\[([^\[\]]*)\]\]/g, '$1');           // [[X]] → X
+    if (s === prev) break;
+  }
+  for (let i = 0; i < 5; i++) {
+    const prev = s;
+    s = s.replace(/\{\{[^{}]*\}\}/g, '');                  // {{...}} 除去
+    if (s === prev) break;
+  }
+  s = s.replace(/<br\s*\/?>/gi, ' ');
+  s = s.replace(/<[^>]+>/g, '');
+  s = s.replace(/（\s*）/g, '').replace(/\(\s*\)/g, '');
+  s = s.replace(/[\[\]{}]/g, '');
+  s = s.replace(/[ \t\u3000]+/g, ' ').trim();
+  s = s.replace(/\s*[（(]\s*$/, '').trim();
+  return s;
+}
+
 async function fetchRouteWikiInfo(routeId) {
   try {
     const title = encodeURIComponent(`国道${routeId}号`);
-    const url = `https://ja.wikipedia.org/w/api.php?action=query&prop=extracts|pageprops&exintro=1&explaintext=1&redirects=1&titles=${title}&format=json&origin=*`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const pages = data?.query?.pages;
+
+    // wikitext（infobox）から起点・終点・総延長を取得
+    const revUrl = `https://ja.wikipedia.org/w/api.php?action=query&prop=revisions&rvprop=content&rvslots=main&redirects=1&titles=${title}&format=json&origin=*`;
+    const revRes = await fetch(revUrl);
+    if (!revRes.ok) return null;
+    const revData = await revRes.json();
+    const pages = revData?.query?.pages;
     if (!pages) return null;
     const page = Object.values(pages)[0];
     if (!page || page.missing !== undefined) return null;
+    const wikitext = page?.revisions?.[0]?.slots?.main?.['*'] || '';
 
-    let extract = page.extract || '';
-    // 最初の段落のみ（空行より前）
-    const firstPara = extract.split(/\n\n+/)[0].trim();
+    function extractField(field) {
+      const re = new RegExp(`\\|${field}\\s*=\\s*([\\s\\S]*?)(?=\\n\\s*\\||\\n\\n|$)`);
+      const m = wikitext.match(re);
+      return m ? _cleanWikitext(m[1].trim()) : null;
+    }
 
-    // 延長を本文から正規表現で抽出
-    const lenMatch = extract.match(/総延長[^\d]*?([\d,]+(?:\.\d+)?)\s*km/);
-    const length = lenMatch ? lenMatch[1].replace(',', '') + ' km' : null;
+    const from   = extractField('起点');
+    const to     = extractField('終点');
+    const rawLen = extractField('総延長');
+    let length = null;
+    if (rawLen) {
+      const rawLen2 = rawLen.replace(/キロメートル/g, 'km');
+      const lm = rawLen2.match(/([\d,]+(?:\.\d+)?)\s*km/);
+      if (lm) length = lm[1].replace(',', '') + ' km';
+    }
 
-    return {
-      extract: firstPara.length > 20 ? firstPara : null,
-      length,
-    };
+    // 概要文（extracts API）
+    const extUrl = `https://ja.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&redirects=1&titles=${title}&format=json&origin=*`;
+    const extRes = await fetch(extUrl);
+    let extract = null;
+    if (extRes.ok) {
+      const extData = await extRes.json();
+      const extPage = Object.values(extData?.query?.pages || {})[0];
+      const raw = extPage?.extract || '';
+      const firstPara = raw.split(/\n\n+/)[0].trim();
+      if (firstPara.length > 20) extract = firstPara;
+    }
+
+    return { from, to, length, extract };
   } catch {
     return null;
   }
@@ -423,6 +479,8 @@ function exportData() {
   URL.revokeObjectURL(url);
   showToast('エクスポートしました', 'success');
 }
+let _importPending = null; // 選択ダイアログ中に保持するパース済みデータ
+
 function importData() {
   const input = document.createElement('input');
   input.type = 'file';
@@ -433,14 +491,78 @@ function importData() {
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
-        collectedData = JSON.parse(ev.target.result);
-        saveData(); renderAll();
-        showToast('インポートしました', 'success');
+        const parsed = JSON.parse(ev.target.result);
+        // 簡易バリデーション：オブジェクトかどうか
+        if (typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('invalid');
+        _importPending = parsed;
+        openImportModal();
       } catch { showToast('ファイルの読み込みに失敗しました', 'error'); }
     };
     reader.readAsText(file);
   };
   input.click();
+}
+
+function openImportModal() {
+  document.getElementById('import-modal-overlay').classList.add('open');
+}
+function closeImportModal() {
+  document.getElementById('import-modal-overlay').classList.remove('open');
+  _importPending = null;
+}
+
+function applyImportMerge() {
+  if (!_importPending) return;
+  const incoming = _importPending;
+  // 国道IDごとにマージ：各フィールドを既存優先でマージ
+  // collected: どちらかがtrueなら true（取得済み情報を失わない）
+  // 他フィールド: 既存が空なら incoming の値を採用
+  let added = 0, updated = 0;
+  for (const id of Object.keys(incoming)) {
+    const cur = collectedData[id];
+    const inc = incoming[id];
+    if (!cur) {
+      // 既存にない → そのまま追加
+      collectedData[id] = inc;
+      if (inc.collected) added++;
+    } else {
+      // 既存あり → フィールドごとにマージ
+      const merged = { ...cur };
+      // collected: どちらかがtrueなら true
+      if (inc.collected && !cur.collected) { merged.collected = true; updated++; }
+      // memo: 既存が空なら incoming を採用
+      if (!cur.memo && inc.memo) merged.memo = inc.memo;
+      // date: 既存が空なら incoming を採用
+      if (!cur.date && inc.date) merged.date = inc.date;
+      // location: 既存が空なら incoming を採用
+      if (!cur.location && inc.location) merged.location = inc.location;
+      // lat/lng: 既存が未設定なら incoming を採用
+      if ((cur.lat == null) && inc.lat != null) { merged.lat = inc.lat; merged.lng = inc.lng; }
+      // photos: 既存に未登録のものを追加
+      if (inc.photos && inc.photos.length > 0) {
+        const existingUrls = new Set((cur.photos || []).map(p => typeof p === 'string' ? p : p.url));
+        const newPhotos = inc.photos.filter(p => {
+          const url = typeof p === 'string' ? p : p.url;
+          return !existingUrls.has(url);
+        });
+        if (newPhotos.length > 0) merged.photos = [...(cur.photos || []), ...newPhotos];
+      }
+      collectedData[id] = merged;
+    }
+  }
+  saveData(); renderAll();
+  closeImportModal();
+  const total = Object.keys(incoming).length;
+  showToast(`マージ完了（${total}件処理）`, 'success');
+}
+
+function applyImportOverwrite() {
+  if (!_importPending) return;
+  if (!confirm('現在のすべての記録が削除され、インポートデータに置き換えられます。よろしいですか？')) return;
+  collectedData = _importPending;
+  saveData(); renderAll();
+  closeImportModal();
+  showToast('インポートしました（上書き）', 'success');
 }
 function resetData() {
   if (!confirm('すべての取得記録をリセットしますか？この操作は元に戻せません。')) return;
@@ -949,6 +1071,14 @@ function setupEvents() {
   document.getElementById('btn-export').addEventListener('click', exportData);
   document.getElementById('btn-import').addEventListener('click', importData);
   document.getElementById('btn-reset').addEventListener('click', resetData);
+
+  // インポートモーダルのボタン
+  document.getElementById('import-btn-merge').addEventListener('click', applyImportMerge);
+  document.getElementById('import-btn-overwrite').addEventListener('click', applyImportOverwrite);
+  document.getElementById('import-btn-cancel').addEventListener('click', closeImportModal);
+  document.getElementById('import-modal-overlay').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeImportModal();
+  });
 
   // ジオコーディング
   document.getElementById('btn-geocode').addEventListener('click', geocodeLocation);

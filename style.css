@@ -1040,6 +1040,10 @@ input, select, textarea { font-family: inherit; }
   background: #f9f9fc;
   padding: 12px 14px;
 }
+/* 起点・終点は全幅で表示 */
+.detail-info-cell.full-width {
+  grid-column: 1 / -1;
+}
 .detail-info-label {
   font-size: 11px;
   color: #888;
@@ -1053,6 +1057,11 @@ input, select, textarea { font-family: inherit; }
   font-weight: 600;
   color: #1c1c1e;
   word-break: break-all;
+}
+.detail-info-value.loading {
+  color: #aaa;
+  font-weight: 400;
+  font-size: 13px;
 }
 
 /* セクション共通 */
@@ -1159,3 +1168,94 @@ input, select, textarea { font-family: inherit; }
   color: #aaa;
   margin-bottom: 8px;
 }
+
+/* ===== インポートモーダル ===== */
+.import-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1100;
+  align-items: center;
+  justify-content: center;
+}
+.import-modal-overlay.open {
+  display: flex;
+}
+.import-modal {
+  background: #fff;
+  border-radius: 16px;
+  width: min(340px, calc(100vw - 40px));
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.import-modal-header {
+  padding: 20px 20px 12px;
+  text-align: center;
+}
+.import-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #003087;
+  margin-bottom: 6px;
+}
+.import-modal-desc {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}
+.import-modal-options {
+  padding: 4px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.import-option-btn {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.import-option-btn:active {
+  background: #f0f4ff;
+  border-color: #0055c8;
+}
+.import-option-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 1px;
+}
+.import-option-body {}
+.import-option-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 3px;
+}
+.import-option-title.merge { color: #0055c8; }
+.import-option-title.overwrite { color: #ff3b30; }
+.import-option-note {
+  font-size: 12px;
+  color: #777;
+  line-height: 1.4;
+}
+.import-modal-cancel {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: none;
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  font-size: 16px;
+  color: #8e8e93;
+  cursor: pointer;
+  font-weight: 500;
+}
+.import-modal-cancel:active { background: #f2f2f7; }

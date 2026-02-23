@@ -199,7 +199,7 @@
             <span class="other-row-icon">📥</span>
             <div class="other-row-body">
               <div class="other-row-title">インポート</div>
-              <div class="other-row-desc">JSONファイルから復元</div>
+              <div class="other-row-desc">JSONファイルから復元・マージ</div>
             </div>
             <span class="arrow">›</span>
           </div>
@@ -334,11 +334,11 @@
 
       <!-- 路線情報 -->
       <div class="detail-info-grid">
-        <div class="detail-info-cell">
+        <div class="detail-info-cell full-width">
           <div class="detail-info-label">📍 起点</div>
           <div class="detail-info-value" id="detail-from">—</div>
         </div>
-        <div class="detail-info-cell">
+        <div class="detail-info-cell full-width">
           <div class="detail-info-label">🏁 終点</div>
           <div class="detail-info-value" id="detail-to">—</div>
         </div>
@@ -348,7 +348,7 @@
         </div>
         <div class="detail-info-cell">
           <div class="detail-info-label">📏 延長</div>
-          <div class="detail-info-value" id="detail-length">—</div>
+          <div class="detail-info-value loading" id="detail-length">—</div>
         </div>
       </div>
 
@@ -386,6 +386,33 @@
     </div>
     <div id="map-picker-container"></div>
     <div class="map-picker-hint" id="map-picker-hint">地図をタップして場所を指定してください</div>
+  </div>
+
+  <!-- インポートモーダル -->
+  <div id="import-modal-overlay" class="import-modal-overlay" role="dialog" aria-modal="true">
+    <div class="import-modal">
+      <div class="import-modal-header">
+        <div class="import-modal-title">📥 インポート方式を選択</div>
+        <div class="import-modal-desc">インポートしたデータを既存の記録とどのように合わせますか？</div>
+      </div>
+      <div class="import-modal-options">
+        <button class="import-option-btn" id="import-btn-merge">
+          <span class="import-option-icon">🔀</span>
+          <div class="import-option-body">
+            <div class="import-option-title merge">マージ（追加・更新）</div>
+            <div class="import-option-note">既存の記録を残しつつ、インポートしたデータで補完・更新します。取得済み記録は消えません。</div>
+          </div>
+        </button>
+        <button class="import-option-btn" id="import-btn-overwrite">
+          <span class="import-option-icon">⚠️</span>
+          <div class="import-option-body">
+            <div class="import-option-title overwrite">上書き（完全置換）</div>
+            <div class="import-option-note">現在の記録をすべて削除し、インポートしたデータに完全に置き換えます。</div>
+          </div>
+        </button>
+      </div>
+      <button class="import-modal-cancel" id="import-btn-cancel">キャンセル</button>
+    </div>
   </div>
 
   <!-- トースト -->
