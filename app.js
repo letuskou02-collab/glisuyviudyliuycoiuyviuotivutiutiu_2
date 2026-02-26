@@ -438,7 +438,7 @@ function openGalleryDetail(id) {
 
   // バッジ・タイトル
   const badge = document.getElementById('gd-route-badge');
-  badge.textContent = id;
+  badge.innerHTML = id;  // 後でWiki画像で上書き（フォールバック用に番号を表示）
   badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
   document.getElementById('gd-route-num').textContent = `国道${id}号`;
   document.getElementById('gd-route-type').textContent = `${route.region}　／　${route.type}国道`;
@@ -452,11 +452,8 @@ function openGalleryDetail(id) {
 
   // Wikipedia 標識・路線図画像（宣言を先に）
   const wikiImgSec  = document.getElementById('gd-wiki-images');
-  const signImgEl   = document.getElementById('gd-sign-image');
   const mapImgEl    = document.getElementById('gd-map-image');
   wikiImgSec.style.display = 'none';
-  signImgEl.style.display  = 'none';
-  signImgEl.src = '';
   mapImgEl.style.display   = 'none';
   mapImgEl.src  = '';
 
@@ -480,16 +477,15 @@ function openGalleryDetail(id) {
         wikiSec.style.display = 'block';
         wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
       }
-      // 標識・路線図画像を表示
+      // 標識画像をバッジ（左上アイコン）に表示
       if (info.signImageUrl) {
-        signImgEl.src = info.signImageUrl;
-        signImgEl.style.display = 'block';
+        badge.innerHTML = `<img src="${info.signImageUrl}" alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
+        badge.className = 'detail-route-badge sign-img' + (collected ? ' collected' : '');
       }
+      // 路線図画像を表示
       if (info.mapImageUrl) {
         mapImgEl.src = info.mapImageUrl;
         mapImgEl.style.display = 'block';
-      }
-      if (info.signImageUrl || info.mapImageUrl) {
         wikiImgSec.style.display = 'block';
       }
     } else {

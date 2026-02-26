@@ -1067,6 +1067,16 @@ input, select, textarea { font-family: inherit; }
   background: linear-gradient(135deg, #0055c8, #003087);
   box-shadow: 0 4px 12px rgba(0,48,135,0.35);
 }
+.detail-route-badge.sign-img {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  overflow: hidden;
+}
+.detail-route-badge.sign-img.collected {
+  background: transparent;
+  box-shadow: none;
+}
 .detail-route-num {
   font-size: 22px;
   font-weight: 800;
