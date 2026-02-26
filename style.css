@@ -79,6 +79,8 @@ input, select, textarea { font-family: inherit; }
 .shop-page {
   display: flex;
   flex-direction: column;
+  height: calc(100dvh - env(safe-area-inset-top, 0px) - 60px - env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
 }
 .shop-content {
   flex: 1;
@@ -331,7 +333,8 @@ input, select, textarea { font-family: inherit; }
   top: 0;
   z-index: 50;
 }
-.page-header h2 { font-size: 18px; font-weight: 700; }
+.page-header h2 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.page-header-icon { display: flex; align-items: center; }
 .list-toolbar { background: white; border-bottom: 1px solid #e5e5ea; }
 .search-bar {
   display: flex;
@@ -589,7 +592,10 @@ input, select, textarea { font-family: inherit; }
 /* ===================================================
    その他
    =================================================== */
-.other-page { padding-bottom: 24px; }
+.other-page {
+  height: calc(100dvh - env(safe-area-inset-top, 0px) - 60px - env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+}
 .other-section { padding: 0 16px; }
 .other-group-label {
   font-size: 12px;
