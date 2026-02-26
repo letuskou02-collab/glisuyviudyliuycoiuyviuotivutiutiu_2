@@ -344,8 +344,14 @@ function openDetail(id) {
 
   // バッジ・タイトル
   const badge = document.getElementById('detail-route-badge');
-  badge.textContent = id;
-  badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
+  const _signUrl = getRouteSignUrl(id);
+  if (_signUrl) {
+    badge.innerHTML = `<img src="${_signUrl}" alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
+    badge.className = 'detail-route-badge sign-img' + (collected ? ' collected' : '');
+  } else {
+    badge.innerHTML = id;
+    badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
+  }
   document.getElementById('detail-route-num').textContent = `国道${id}号`;
   document.getElementById('detail-route-type').textContent =
     `${route.region}　／　${route.type}国道`;
@@ -459,12 +465,7 @@ function openGalleryDetail(id) {
   document.getElementById('gd-length').textContent = '取得中…';
   document.getElementById('gd-length').className = 'detail-info-value loading';
 
-  // Wikipedia 標識・路線図画像（宣言を先に）
-  const wikiImgSec  = document.getElementById('gd-wiki-images');
-  const mapImgEl    = document.getElementById('gd-map-image');
-  wikiImgSec.style.display = 'none';
-  mapImgEl.style.display   = 'none';
-  mapImgEl.src  = '';
+
 
   // Wikipedia情報（非同期）
   const wikiSec = document.getElementById('gd-wiki-section');
@@ -486,12 +487,7 @@ function openGalleryDetail(id) {
         wikiSec.style.display = 'block';
         wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
       }
-      // 路線図画像を表示
-      if (info.mapImageUrl) {
-        mapImgEl.src = info.mapImageUrl;
-        mapImgEl.style.display = 'block';
-        wikiImgSec.style.display = 'block';
-      }
+
     } else {
       const lenEl = document.getElementById('gd-length');
       lenEl.textContent = '—';
@@ -612,35 +608,7 @@ async function fetchRouteWikiInfo(routeId) {
       if (firstPara.length > 20) extract = firstPara;
     }
 
-    // 標識・路線図画像（images API + imageinfo API）
-    const imgUrl = `https://ja.wikipedia.org/w/api.php?action=query&prop=images&imlimit=30&redirects=1&titles=${title}&format=json&origin=*`;
-    const imgRes = await fetch(imgUrl);
-    let signImageUrl = null;
-    let mapImageUrl = null;
-    if (imgRes.ok) {
-      const imgData = await imgRes.json();
-      const imgPage = Object.values(imgData?.query?.pages || {})[0];
-      const images = imgPage?.images || [];
-      // 標識: 対象国道番号に対応した Japanese_National_Route_Sign_XXXX.svg
-      const paddedId = String(routeId).padStart(4, '0');
-      const signImg = images.find(i => i.title.includes(`Japanese_National_Route_Sign_${paddedId}`))
-                   || images.find(i => /Japanese_National_Route_Sign/i.test(i.title));
-      // 路線図: 路線図・Map・Route を含む画像（jpg/png/svg）
-      const mapImg = images.find(i => /路線図|Map|Route/i.test(i.title) && !/Sign|logo|portal|flag|commons|disambig/i.test(i.title));
-      // ファイル名→実際のURL取得（imageinfo API）
-      const getImageUrl = async (fileTitle) => {
-        const u = `https://ja.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(fileTitle)}&format=json&origin=*`;
-        const r = await fetch(u);
-        if (!r.ok) return null;
-        const d = await r.json();
-        const p = Object.values(d?.query?.pages || {})[0];
-        return p?.imageinfo?.[0]?.url || null;
-      };
-      if (signImg) signImageUrl = await getImageUrl(signImg.title);
-      if (mapImg)  mapImageUrl  = await getImageUrl(mapImg.title);
-    }
-
-    return { from, to, length, extract, signImageUrl, mapImageUrl };
+    return { from, to, length, extract };
   } catch {
     return null;
   }
@@ -1071,6 +1039,13 @@ function renderPhotoGrid() {
 
 // === ビュー切替 ===
 function switchView(view) {
+  // 詳細シートが開いていたら閉じる
+  if (document.getElementById('detail-overlay').classList.contains('open')) {
+    closeDetail();
+  }
+  if (document.getElementById('gallery-detail-overlay').classList.contains('open')) {
+    closeGalleryDetail();
+  }
   currentView = view;
   document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.tab-item').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));

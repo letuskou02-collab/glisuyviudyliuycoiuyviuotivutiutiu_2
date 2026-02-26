@@ -1427,23 +1427,7 @@ input, select, textarea { font-family: inherit; }
 .gd-collected-info {
   padding: 4px 0 8px;
 }
-.gd-wiki-images {
-  margin-bottom: 16px;
-}
-.gd-wiki-images-grid {
-  display: flex;
-  gap: 12px;
-  padding: 0 16px;
-  align-items: flex-start;
-}
-.gd-wiki-img {
-  flex: 1;
-  max-width: 50%;
-  max-height: 140px;
-  object-fit: contain;
-  border-radius: 8px;
-  background: #f2f2f7;
-}
+
 .gd-photos-section {
   margin-bottom: 16px;
 }
