@@ -198,10 +198,15 @@ input, select, textarea { font-family: inherit; }
   transform: scale(0.97);
 }
 .menu-card-icon {
-  font-size: 32px;
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
+  color: rgba(255,255,255,0.9);
 }
+.menu-card-icon svg { width: 32px; height: 32px; }
 .menu-card-body {
   flex: 1;
   min-width: 0;
