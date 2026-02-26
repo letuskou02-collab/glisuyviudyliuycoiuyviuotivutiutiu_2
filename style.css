@@ -77,7 +77,8 @@ input, select, textarea { font-family: inherit; }
   transition: color 0.15s;
   -webkit-tap-highlight-color: transparent;
 }
-.tab-item .tab-icon { font-size: 22px; line-height: 1; }
+.tab-item .tab-icon { display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; }
+.tab-item .tab-icon svg { width: 24px; height: 24px; }
 .tab-item.active { color: #0055c8; }
 .tab-item:active { opacity: 0.6; }
 

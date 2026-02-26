@@ -1065,8 +1065,7 @@ function initHomeMap() {
       : '';
     const marker = L.marker([lat, lng], { icon }).addTo(mapInstance._markerLayer);
     marker.bindPopup(
-      `<b>国道${id}号</b> ✅<br>` +
-      `<small style="color:#666">${route.region}　${route.from}→${route.to}</small><br>` +
+      `<b>国道${id}号</b><br>` +
       (d.location ? `📍 ${d.location}<br>` : '') +
       (d.date ? `📅 ${d.date}<br>` : '') +
       (d.memo ? `📝 ${d.memo}<br>` : '') +
