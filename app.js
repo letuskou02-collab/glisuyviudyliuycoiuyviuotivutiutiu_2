@@ -16,7 +16,7 @@ let isListView = false;
 let activeModalId = null;
 let currentPhotos = [];
 let tapTimers = {};
-let currentView = 'menu';
+let currentView = 'home';
 let mapInstance = null;
 
 // === データ管理 ===
@@ -1285,10 +1285,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // 毎回メニューから起動（全ページ非表示→メニューのみ表示）
-  document.querySelectorAll('.view-page').forEach(el => el.style.display = 'none');
-  document.getElementById('view-menu').style.display = 'block';
-  document.querySelector('.bottom-tab-bar').style.display = 'none';
+  // ホーム画面から起動
+  switchView('home');
 
   registerSW();
 });
