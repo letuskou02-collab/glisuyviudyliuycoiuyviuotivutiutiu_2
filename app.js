@@ -1180,10 +1180,13 @@ function initHomeMap() {
     if (isNaN(lat) || isNaN(lng)) return;
     const route = KOKUDO_ROUTES.find(r => r.id === parseInt(id));
     if (!route) return;
+    const signUrl = getRouteSignUrl(parseInt(id));
     const icon = L.divIcon({
       className: '',
-      html: `<div style="background:#0055c8;color:white;font-size:10px;font-weight:700;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${id}</div>`,
-      iconSize: [28, 28], iconAnchor: [14, 14]
+      html: signUrl
+        ? `<img src="${signUrl}" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" />`
+        : `<div style="background:#0055c8;color:white;font-size:10px;font-weight:700;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${id}</div>`,
+      iconSize: [36, 36], iconAnchor: [18, 18]
     });
     const photoHtml = (d.photos && d.photos.length > 0)
       ? `<img src="${d.photos[0]}" style="width:100%;max-width:200px;border-radius:6px;margin-top:6px;display:block;" />`
