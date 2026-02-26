@@ -1367,3 +1367,61 @@ input, select, textarea { font-family: inherit; }
 .update-banner-btn:active {
   opacity: 0.8;
 }
+
+/* === 一覧用詳細シート（表示専用） === */
+.gd-collected-badge {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #d1fae5;
+  color: #065f46;
+  margin: 0 16px 10px;
+}
+.gd-uncollected-badge {
+  display: inline-block;
+  padding: 5px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #e5e5ea;
+  color: #666;
+  margin: 0 16px 10px;
+}
+.gd-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 14px;
+  color: #3a3a3c;
+  padding: 4px 16px;
+  line-height: 1.5;
+}
+.gd-info-row span {
+  flex: 1;
+}
+.gd-memo span {
+  color: #555;
+  white-space: pre-wrap;
+}
+.gd-photos-section {
+  margin-bottom: 16px;
+}
+.gd-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 0 16px;
+}
+.gd-photo-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.gd-photo-thumb:active {
+  opacity: 0.8;
+}

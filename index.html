@@ -445,6 +445,65 @@
     </div>
   </div>
 
+  <!-- ===== 一覧用詳細シート（表示専用） ===== -->
+  <div id="gallery-detail-overlay" class="detail-overlay" role="dialog" aria-modal="true">
+    <div class="detail-sheet">
+      <div class="modal-handle"></div>
+
+      <!-- ヘッダー -->
+      <div class="detail-header">
+        <div class="detail-hero">
+          <div class="detail-route-badge" id="gd-route-badge">1</div>
+          <div class="detail-route-titles">
+            <div class="detail-route-num" id="gd-route-num">国道1号</div>
+            <div class="detail-route-type" id="gd-route-type"></div>
+          </div>
+        </div>
+        <button id="gd-close" class="detail-close-btn" aria-label="閉じる">✕</button>
+      </div>
+
+      <!-- 路線情報 -->
+      <div class="detail-info-grid">
+        <div class="detail-info-cell full-width">
+          <div class="detail-info-label">📍 起点</div>
+          <div class="detail-info-value" id="gd-from">—</div>
+        </div>
+        <div class="detail-info-cell full-width">
+          <div class="detail-info-label">🏁 終点</div>
+          <div class="detail-info-value" id="gd-to">—</div>
+        </div>
+        <div class="detail-info-cell">
+          <div class="detail-info-label">🗾 地域</div>
+          <div class="detail-info-value" id="gd-region">—</div>
+        </div>
+        <div class="detail-info-cell">
+          <div class="detail-info-label">📏 延長</div>
+          <div class="detail-info-value loading" id="gd-length">—</div>
+        </div>
+      </div>
+
+      <!-- Wikipedia 概要 -->
+      <div class="detail-wiki-section" id="gd-wiki-section" style="display:none">
+        <div class="detail-section-label">📖 概要</div>
+        <div class="detail-wiki-text" id="gd-wiki-text"></div>
+        <a class="detail-wiki-link" id="gd-wiki-link" href="#" target="_blank" rel="noopener">Wikipedia で詳しく見る →</a>
+      </div>
+
+      <!-- 取得情報 -->
+      <div class="detail-status-section" id="gd-collected-section">
+        <div class="detail-section-label">🏷 取得情報</div>
+        <div class="gd-collected-body" id="gd-collected-body"></div>
+      </div>
+
+      <!-- 写真 -->
+      <div class="gd-photos-section" id="gd-photos-section" style="display:none">
+        <div class="detail-section-label">📸 写真</div>
+        <div class="gd-photos-grid" id="gd-photos-grid"></div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- 地図ピッカー -->
   <div id="map-picker-overlay" class="map-picker-overlay" style="display:none">
     <div class="map-picker-header">

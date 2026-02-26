@@ -313,7 +313,7 @@ function buildGallery() {
         ${d.date ? `<div class="gallery-date">📅 ${d.date}</div>` : ''}
       </div>
     `;
-    card.addEventListener('click', () => openDetail(route.id));
+    card.addEventListener('click', () => openGalleryDetail(route.id));
     container.appendChild(card);
   });
 }
@@ -422,6 +422,110 @@ function _updateDetailStatus(id, d) {
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   activeDetailId = null;
+  document.getElementById('app-body').classList.remove('modal-open');
+}
+
+// === 一覧用詳細シート（表示専用） ===
+let activeGalleryDetailId = null;
+
+function openGalleryDetail(id) {
+  const route = KOKUDO_ROUTES.find(r => r.id === id);
+  if (!route) return;
+  activeGalleryDetailId = id;
+
+  const d = getRouteData(id);
+  const collected = !!d.collected;
+
+  // バッジ・タイトル
+  const badge = document.getElementById('gd-route-badge');
+  badge.textContent = id;
+  badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
+  document.getElementById('gd-route-num').textContent = `国道${id}号`;
+  document.getElementById('gd-route-type').textContent = `${route.region}　／　${route.type}国道`;
+
+  // 路線情報（routes.jsの値で初期表示）
+  document.getElementById('gd-from').textContent = route.from;
+  document.getElementById('gd-to').textContent = route.to;
+  document.getElementById('gd-region').textContent = route.region;
+  document.getElementById('gd-length').textContent = '取得中…';
+  document.getElementById('gd-length').className = 'detail-info-value loading';
+
+  // Wikipedia情報（非同期）
+  const wikiSec = document.getElementById('gd-wiki-section');
+  const wikiText = document.getElementById('gd-wiki-text');
+  const wikiLink = document.getElementById('gd-wiki-link');
+  wikiSec.style.display = 'none';
+  wikiText.textContent = '';
+  wikiText.classList.remove('expanded');
+  fetchRouteWikiInfo(id).then(info => {
+    if (info) {
+      if (info.from) document.getElementById('gd-from').textContent = info.from;
+      if (info.to)   document.getElementById('gd-to').textContent   = info.to;
+      const lenEl = document.getElementById('gd-length');
+      lenEl.textContent = info.length || '—';
+      lenEl.className = 'detail-info-value';
+      if (info.extract) {
+        wikiText.textContent = info.extract;
+        wikiLink.href = `https://ja.wikipedia.org/wiki/国道${id}号`;
+        wikiSec.style.display = 'block';
+        wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
+      }
+    } else {
+      const lenEl = document.getElementById('gd-length');
+      lenEl.textContent = '—';
+      lenEl.className = 'detail-info-value';
+    }
+  });
+
+  // 取得情報
+  const body = document.getElementById('gd-collected-body');
+  if (collected) {
+    const lines = [];
+    if (d.date)     lines.push(`<div class="gd-info-row">📅 <span>${d.date}</span></div>`);
+    if (d.location) lines.push(`<div class="gd-info-row">📍 <span>${d.location}</span></div>`);
+    if (d.memo)     lines.push(`<div class="gd-info-row gd-memo">📝 <span>${d.memo}</span></div>`);
+    body.innerHTML = lines.length
+      ? `<div class="gd-collected-badge">取得済み ✅</div>${lines.join('')}`
+      : `<div class="gd-collected-badge">取得済み ✅</div>`;
+  } else {
+    body.innerHTML = `<div class="gd-uncollected-badge">未取得</div>`;
+  }
+
+  // 写真
+  const photosSec = document.getElementById('gd-photos-section');
+  const photosGrid = document.getElementById('gd-photos-grid');
+  photosGrid.innerHTML = '';
+  if (d.photos && d.photos.length > 0) {
+    d.photos.forEach(src => {
+      const img = document.createElement('img');
+      img.src = src;
+      img.className = 'gd-photo-thumb';
+      img.alt = `国道${id}号の写真`;
+      img.loading = 'lazy';
+      img.addEventListener('click', () => {
+        const ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;';
+        const full = document.createElement('img');
+        full.src = src;
+        full.style.cssText = 'max-width:95vw;max-height:90dvh;border-radius:8px;object-fit:contain;';
+        ov.appendChild(full);
+        ov.addEventListener('click', () => document.body.removeChild(ov));
+        document.body.appendChild(ov);
+      });
+      photosGrid.appendChild(img);
+    });
+    photosSec.style.display = 'block';
+  } else {
+    photosSec.style.display = 'none';
+  }
+
+  document.getElementById('gallery-detail-overlay').classList.add('open');
+  document.getElementById('app-body').classList.add('modal-open');
+}
+
+function closeGalleryDetail() {
+  document.getElementById('gallery-detail-overlay').classList.remove('open');
+  activeGalleryDetailId = null;
   document.getElementById('app-body').classList.remove('modal-open');
 }
 
@@ -1138,6 +1242,11 @@ function setupEvents() {
   document.getElementById('detail-close').addEventListener('click', closeDetail);
   document.getElementById('detail-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('detail-overlay')) closeDetail();
+  });
+  // 一覧用詳細シート
+  document.getElementById('gd-close').addEventListener('click', closeGalleryDetail);
+  document.getElementById('gallery-detail-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('gallery-detail-overlay')) closeGalleryDetail();
   });
   document.getElementById('detail-edit-btn').addEventListener('click', () => {
     const id = activeDetailId;
