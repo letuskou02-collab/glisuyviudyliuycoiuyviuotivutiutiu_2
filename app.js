@@ -300,9 +300,12 @@ function buildGallery() {
     const card = document.createElement('div');
     card.className = 'gallery-card';
 
+    const signUrl = getRouteSignUrl(route.id);
     const thumb = (d.photos && d.photos.length > 0)
       ? `<div class="gallery-thumb"><img src="${d.photos[0]}" alt="国道${route.id}号" loading="lazy" /></div>`
-      : `<div class="gallery-thumb no-photo"><span>📸</span></div>`;
+      : signUrl
+        ? `<div class="gallery-thumb sign-thumb"><img src="${signUrl}" alt="国道${route.id}号標識" /></div>`
+        : `<div class="gallery-thumb no-photo"><span>📸</span></div>`;
 
     card.innerHTML = `
       ${thumb}
@@ -438,8 +441,14 @@ function openGalleryDetail(id) {
 
   // バッジ・タイトル
   const badge = document.getElementById('gd-route-badge');
-  badge.innerHTML = id;  // 後でWiki画像で上書き（フォールバック用に番号を表示）
-  badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
+  const _signUrl = getRouteSignUrl(id);
+  if (_signUrl) {
+    badge.innerHTML = `<img src="${_signUrl}" alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
+    badge.className = 'detail-route-badge sign-img' + (collected ? ' collected' : '');
+  } else {
+    badge.innerHTML = id;
+    badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
+  }
   document.getElementById('gd-route-num').textContent = `国道${id}号`;
   document.getElementById('gd-route-type').textContent = `${route.region}　／　${route.type}国道`;
 
@@ -476,11 +485,6 @@ function openGalleryDetail(id) {
         wikiLink.href = `https://ja.wikipedia.org/wiki/国道${id}号`;
         wikiSec.style.display = 'block';
         wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
-      }
-      // 標識画像をバッジ（左上アイコン）に表示
-      if (info.signImageUrl) {
-        badge.innerHTML = `<img src="${info.signImageUrl}" alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
-        badge.className = 'detail-route-badge sign-img' + (collected ? ' collected' : '');
       }
       // 路線図画像を表示
       if (info.mapImageUrl) {
