@@ -450,6 +450,16 @@ function openGalleryDetail(id) {
   document.getElementById('gd-length').textContent = '取得中…';
   document.getElementById('gd-length').className = 'detail-info-value loading';
 
+  // Wikipedia 標識・路線図画像（宣言を先に）
+  const wikiImgSec  = document.getElementById('gd-wiki-images');
+  const signImgEl   = document.getElementById('gd-sign-image');
+  const mapImgEl    = document.getElementById('gd-map-image');
+  wikiImgSec.style.display = 'none';
+  signImgEl.style.display  = 'none';
+  signImgEl.src = '';
+  mapImgEl.style.display   = 'none';
+  mapImgEl.src  = '';
+
   // Wikipedia情報（非同期）
   const wikiSec = document.getElementById('gd-wiki-section');
   const wikiText = document.getElementById('gd-wiki-text');
@@ -489,15 +499,15 @@ function openGalleryDetail(id) {
     }
   });
 
-  // Wikipedia 標識・路線図画像（fetchRouteWikiInfo から取得）
-  const wikiImgSec  = document.getElementById('gd-wiki-images');
-  const signImgEl   = document.getElementById('gd-sign-image');
-  const mapImgEl    = document.getElementById('gd-map-image');
-  wikiImgSec.style.display = 'none';
-  signImgEl.style.display  = 'none';
-  signImgEl.src = '';
-  mapImgEl.style.display   = 'none';
-  mapImgEl.src  = '';
+  // 取得情報（日時・場所）
+  const collectedInfoEl = document.getElementById('gd-collected-info');
+  if (collectedInfoEl) {
+    const rows = [];
+    if (d.date)     rows.push(`<div class="gd-info-row">📅 <span>${d.date}</span></div>`);
+    if (d.location) rows.push(`<div class="gd-info-row">📍 <span>${d.location}</span></div>`);
+    collectedInfoEl.innerHTML = rows.join('');
+    collectedInfoEl.style.display = rows.length ? 'block' : 'none';
+  }
 
   // 写真
   const photosSec = document.getElementById('gd-photos-section');
@@ -611,10 +621,12 @@ async function fetchRouteWikiInfo(routeId) {
       const imgData = await imgRes.json();
       const imgPage = Object.values(imgData?.query?.pages || {})[0];
       const images = imgPage?.images || [];
-      // 標識: Japanese_National_Route_Sign_XXXX.svg
-      const signImg = images.find(i => /Japanese_National_Route_Sign/i.test(i.title));
-      // 路線図: 路線図 or Route.*jp.svg を含むもの
-      const mapImg = images.find(i => /路線図|Route.*jp\.svg/i.test(i.title));
+      // 標識: 対象国道番号に対応した Japanese_National_Route_Sign_XXXX.svg
+      const paddedId = String(routeId).padStart(4, '0');
+      const signImg = images.find(i => i.title.includes(`Japanese_National_Route_Sign_${paddedId}`))
+                   || images.find(i => /Japanese_National_Route_Sign/i.test(i.title));
+      // 路線図: 路線図・Map・Route を含む画像（jpg/png/svg）
+      const mapImg = images.find(i => /路線図|Map|Route/i.test(i.title) && !/Sign|logo|portal|flag|commons|disambig/i.test(i.title));
       // ファイル名→実際のURL取得（imageinfo API）
       const getImageUrl = async (fileTitle) => {
         const u = `https://ja.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(fileTitle)}&format=json&origin=*`;
