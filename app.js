@@ -470,6 +470,18 @@ function openGalleryDetail(id) {
         wikiSec.style.display = 'block';
         wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
       }
+      // 標識・路線図画像を表示
+      if (info.signImageUrl) {
+        signImgEl.src = info.signImageUrl;
+        signImgEl.style.display = 'block';
+      }
+      if (info.mapImageUrl) {
+        mapImgEl.src = info.mapImageUrl;
+        mapImgEl.style.display = 'block';
+      }
+      if (info.signImageUrl || info.mapImageUrl) {
+        wikiImgSec.style.display = 'block';
+      }
     } else {
       const lenEl = document.getElementById('gd-length');
       lenEl.textContent = '—';
@@ -477,19 +489,15 @@ function openGalleryDetail(id) {
     }
   });
 
-  // 取得情報
-  const body = document.getElementById('gd-collected-body');
-  if (collected) {
-    const lines = [];
-    if (d.date)     lines.push(`<div class="gd-info-row">📅 <span>${d.date}</span></div>`);
-    if (d.location) lines.push(`<div class="gd-info-row">📍 <span>${d.location}</span></div>`);
-    if (d.memo)     lines.push(`<div class="gd-info-row gd-memo">📝 <span>${d.memo}</span></div>`);
-    body.innerHTML = lines.length
-      ? `<div class="gd-collected-badge">取得済み ✅</div>${lines.join('')}`
-      : `<div class="gd-collected-badge">取得済み ✅</div>`;
-  } else {
-    body.innerHTML = `<div class="gd-uncollected-badge">未取得</div>`;
-  }
+  // Wikipedia 標識・路線図画像（fetchRouteWikiInfo から取得）
+  const wikiImgSec  = document.getElementById('gd-wiki-images');
+  const signImgEl   = document.getElementById('gd-sign-image');
+  const mapImgEl    = document.getElementById('gd-map-image');
+  wikiImgSec.style.display = 'none';
+  signImgEl.style.display  = 'none';
+  signImgEl.src = '';
+  mapImgEl.style.display   = 'none';
+  mapImgEl.src  = '';
 
   // 写真
   const photosSec = document.getElementById('gd-photos-section');
@@ -594,7 +602,33 @@ async function fetchRouteWikiInfo(routeId) {
       if (firstPara.length > 20) extract = firstPara;
     }
 
-    return { from, to, length, extract };
+    // 標識・路線図画像（images API + imageinfo API）
+    const imgUrl = `https://ja.wikipedia.org/w/api.php?action=query&prop=images&imlimit=30&redirects=1&titles=${title}&format=json&origin=*`;
+    const imgRes = await fetch(imgUrl);
+    let signImageUrl = null;
+    let mapImageUrl = null;
+    if (imgRes.ok) {
+      const imgData = await imgRes.json();
+      const imgPage = Object.values(imgData?.query?.pages || {})[0];
+      const images = imgPage?.images || [];
+      // 標識: Japanese_National_Route_Sign_XXXX.svg
+      const signImg = images.find(i => /Japanese_National_Route_Sign/i.test(i.title));
+      // 路線図: 路線図 or Route.*jp.svg を含むもの
+      const mapImg = images.find(i => /路線図|Route.*jp\.svg/i.test(i.title));
+      // ファイル名→実際のURL取得（imageinfo API）
+      const getImageUrl = async (fileTitle) => {
+        const u = `https://ja.wikipedia.org/w/api.php?action=query&prop=imageinfo&iiprop=url&titles=${encodeURIComponent(fileTitle)}&format=json&origin=*`;
+        const r = await fetch(u);
+        if (!r.ok) return null;
+        const d = await r.json();
+        const p = Object.values(d?.query?.pages || {})[0];
+        return p?.imageinfo?.[0]?.url || null;
+      };
+      if (signImg) signImageUrl = await getImageUrl(signImg.title);
+      if (mapImg)  mapImageUrl  = await getImageUrl(mapImg.title);
+    }
+
+    return { from, to, length, extract, signImageUrl, mapImageUrl };
   } catch {
     return null;
   }
