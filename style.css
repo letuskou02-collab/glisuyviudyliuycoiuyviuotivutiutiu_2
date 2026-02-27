@@ -314,8 +314,13 @@ input, select, textarea { font-family: inherit; }
 }
 .recent-row:last-child { border-bottom: none; }
 .recent-row:active { background: #f2f2f7; }
+.recent-num {
   color: #0055c8;
+  font-size: 15px;
+  font-weight: 700;
   min-width: 52px;
+  margin-right: 14px;
+  flex-shrink: 0;
 }
 .recent-body { flex: 1; min-width: 0; }
 .recent-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1235,6 +1240,7 @@ input, select, textarea { font-family: inherit; }
   align-items: center;
   gap: 10px;
   padding: 0 16px;
+  flex-wrap: nowrap;
 }
 .detail-status-badge {
   padding: 5px 14px;
@@ -1243,6 +1249,10 @@ input, select, textarea { font-family: inherit; }
   font-weight: 700;
   background: #e5e5ea;
   color: #666;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 76px;
+  text-align: center;
 }
 .detail-status-badge.collected {
   background: #d1fae5;
@@ -1251,6 +1261,8 @@ input, select, textarea { font-family: inherit; }
 .detail-status-meta {
   font-size: 12px;
   color: #888;
+  min-width: 0;
+  line-height: 1.6;
 }
 
 /* アクションボタン */

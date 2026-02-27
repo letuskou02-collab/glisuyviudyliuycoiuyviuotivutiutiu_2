@@ -438,7 +438,7 @@ function _updateDetailStatus(id, d) {
     const parts = [];
     if (d.date) parts.push(`📅 ${d.date}`);
     if (d.location) parts.push(`📍 ${d.location}`);
-    meta.textContent = parts.join('　');
+    meta.innerHTML = parts.join('<br>');
     toggleBtn.textContent = '取得済みを解除';
     toggleBtn.className = 'detail-action-btn detail-action-toggle active';
   } else {
