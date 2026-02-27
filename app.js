@@ -457,42 +457,6 @@ function closeDetail() {
   _unlockBgScroll();
 }
 
-async function exportDetail() {
-  if (activeDetailId === null) return;
-  const route = KOKUDO_ROUTES.find(r => r.id === activeDetailId);
-  const d = getRouteData(activeDetailId);
-  if (!route) return;
-
-  const lines = [
-    `国道${activeDetailId}号`,
-    `地域: ${route.region}`,
-    `起点: ${route.from}`,
-    `終点: ${route.to}`,
-    '',
-    `取得状況: ${d.collected ? '取得済み' : '未取得'}`,
-  ];
-  if (d.collected) {
-    if (d.date) lines.push(`取得日: ${d.date}`);
-    if (d.location) lines.push(`取得場所: ${d.location}`);
-    if (d.memo) lines.push(`メモ: ${d.memo}`);
-  }
-  const text = lines.join('\n');
-
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: `国道${activeDetailId}号`, text });
-    } catch (e) {
-      if (e.name !== 'AbortError') showToast('共有に失敗しました', 'error');
-    }
-  } else {
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast('クリップボードにコピーしました', 'success');
-    } catch (e) {
-      showToast('共有非対応の環境です', 'error');
-    }
-  }
-}
 
 // === 一覧用詳細シート（表示専用） ===
 let activeGalleryDetailId = null;
@@ -607,24 +571,71 @@ function closeGalleryDetail() {
 
 async function exportGalleryDetail() {
   if (activeGalleryDetailId === null) return;
-  const sheet = document.querySelector('#gallery-detail-overlay .detail-sheet');
-  if (!sheet) return;
+  const id = activeGalleryDetailId;
 
   showToast('画像を生成中…', 'info');
   try {
-    // スクロールを先頭に戻してから全体キャプチャ
-    sheet.scrollTop = 0;
-    const canvas = await html2canvas(sheet, {
+    // キャプチャ用のラッパーdivを作成（ボタン類・ハンドル・下余白を除外）
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `
+      position: fixed; left: -9999px; top: 0;
+      width: 390px;
+      background: #f2f2f7;
+      font-family: -apple-system, 'Helvetica Neue', sans-serif;
+      overflow: hidden;
+    `;
+
+    // detail-sheetの中身をコピー（modal-handle と detail-header-btnsは除く）
+    const sheet = document.querySelector('#gallery-detail-overlay .detail-sheet');
+    const clone = sheet.cloneNode(true);
+
+    // ハンドル・ボタン類を除去
+    clone.querySelector('.modal-handle')?.remove();
+    clone.querySelector('.detail-header-btns')?.remove();
+
+    // 標識画像をBase64に変換（CORSエラー回避）
+    const imgEl = clone.querySelector('.detail-route-badge.sign-img img');
+    if (imgEl && imgEl.src) {
+      try {
+        const b64 = await _imgToBase64(imgEl.src);
+        imgEl.src = b64;
+      } catch(_) {}
+    }
+
+    // 写真もBase64に変換
+    const photoImgs = clone.querySelectorAll('.gd-photos-grid img');
+    for (const img of photoImgs) {
+      if (img.src && img.src.startsWith('data:')) continue;
+      try {
+        const b64 = await _imgToBase64(img.src);
+        img.src = b64;
+      } catch(_) {}
+    }
+
+    // スタイルを付与してsheetと同じ見た目に
+    clone.style.cssText = `
+      background: #f2f2f7;
+      border-radius: 0;
+      padding-bottom: 0;
+      overflow: visible;
+    `;
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+
+    const canvas = await html2canvas(wrapper, {
       scale: 2,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#f2f2f7',
       scrollY: 0,
-      windowHeight: sheet.scrollHeight,
-      height: sheet.scrollHeight,
+      width: wrapper.offsetWidth,
+      height: wrapper.scrollHeight,
+      windowWidth: wrapper.offsetWidth,
+      windowHeight: wrapper.scrollHeight,
     });
 
-    const id = activeGalleryDetailId;
+    document.body.removeChild(wrapper);
+
     canvas.toBlob(async (blob) => {
       const fileName = `kokudo${id}gou.png`;
       const file = new File([blob], fileName, { type: 'image/png' });
@@ -633,10 +644,7 @@ async function exportGalleryDetail() {
         try {
           await navigator.share({ files: [file], title: `国道${id}号` });
         } catch (e) {
-          if (e.name !== 'AbortError') {
-            // 共有キャンセル以外はダウンロードにフォールバック
-            _downloadBlob(blob, fileName);
-          }
+          if (e.name !== 'AbortError') _downloadBlob(blob, fileName);
         }
       } else {
         _downloadBlob(blob, fileName);
@@ -646,6 +654,22 @@ async function exportGalleryDetail() {
     console.error(e);
     showToast('画像生成に失敗しました', 'error');
   }
+}
+
+function _imgToBase64(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      c.getContext('2d').drawImage(img, 0, 0);
+      resolve(c.toDataURL('image/png'));
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
 }
 
 function _downloadBlob(blob, fileName) {
@@ -1387,7 +1411,6 @@ function setupEvents() {
 
   // 詳細シート
   document.getElementById('detail-close').addEventListener('click', closeDetail);
-  document.getElementById('detail-export').addEventListener('click', exportDetail);
   document.getElementById('detail-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('detail-overlay')) closeDetail();
   });
