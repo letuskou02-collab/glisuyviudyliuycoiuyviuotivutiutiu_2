@@ -673,6 +673,7 @@ function openModal(id) {
 
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
+  document.querySelector('.bottom-tab-bar').style.display = 'none';
   _lockBgScroll();
 }
 
@@ -693,6 +694,7 @@ function closeModal(save = true) {
   document.getElementById('modal-overlay').classList.remove('open');
   activeModalId = null;
   document.getElementById('app-body').classList.remove('modal-open');
+  document.querySelector('.bottom-tab-bar').style.display = '';
   _unlockBgScroll();
 }
 
@@ -1288,7 +1290,8 @@ function setupEvents() {
   });
 
   // モーダル
-  document.getElementById('modal-close').addEventListener('click', () => closeModal(true));
+  document.getElementById('modal-close').addEventListener('click', () => closeModal(false));
+  document.getElementById('btn-modal-submit').addEventListener('click', () => closeModal(true));
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
   });
@@ -1442,27 +1445,6 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
   setupEvents();
   renderAll();
-
-  // キーボード表示時にタブバーを非表示、閉じたらスクロール位置を補正して再表示
-  const tabBar = document.querySelector('.bottom-tab-bar');
-  let kbOpen = false;
-  let scrollBeforeKb = 0;
-  document.addEventListener('focusin', (e) => {
-    if (e.target.matches('input, textarea, select')) {
-      kbOpen = true;
-      scrollBeforeKb = window.scrollY;
-      tabBar.style.display = 'none';
-    }
-  });
-  document.addEventListener('focusout', () => {
-    kbOpen = false;
-    setTimeout(() => {
-      if (!kbOpen) {
-        window.scrollTo(0, scrollBeforeKb);
-        tabBar.style.display = '';
-      }
-    }, 350);
-  });
 
   // メニューカードの遷移イベント
   document.querySelectorAll('.menu-card').forEach(btn => {
