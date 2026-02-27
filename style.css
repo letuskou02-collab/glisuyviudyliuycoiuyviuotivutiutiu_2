@@ -20,6 +20,10 @@ body.modal-open #app-body,
 #app-body.modal-open {
   overflow: hidden;
 }
+/* モーダル表示中はタブバーを非表示（キーボード浮き上がり防止） */
+#app-body.modal-open ~ .bottom-tab-bar {
+  display: none !important;
+}
 button { font-family: inherit; cursor: pointer; border: none; background: none; }
 input, select, textarea { font-family: inherit; }
 

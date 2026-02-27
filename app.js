@@ -342,6 +342,8 @@ function _lockBgScroll() {
   appBody.style.overflow = 'hidden';
   appBody.style.height = '100dvh';
   appBody.style.maxHeight = '100dvh';
+  const tabBar = document.querySelector('.bottom-tab-bar');
+  if (tabBar) tabBar.style.display = 'none';
   _startViewportWatch();
 }
 function _unlockBgScroll() {
@@ -350,6 +352,8 @@ function _unlockBgScroll() {
   appBody.style.height = '';
   appBody.style.maxHeight = '';
   appBody.scrollTop = _scrollY;
+  const tabBar = document.querySelector('.bottom-tab-bar');
+  if (tabBar) tabBar.style.display = '';
   _stopViewportWatch();
 }
 
