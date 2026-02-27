@@ -334,6 +334,19 @@ function renderAll() {
 // === 国道詳細シート ===
 let activeDetailId = null;
 
+// モーダル表示中の背景スクロール防止
+function _preventBgScroll(e) {
+  // detail-sheet の内側タッチはスクロール許可
+  if (e.target.closest('.detail-sheet')) return;
+  e.preventDefault();
+}
+function _lockBgScroll() {
+  document.addEventListener('touchmove', _preventBgScroll, { passive: false });
+}
+function _unlockBgScroll() {
+  document.removeEventListener('touchmove', _preventBgScroll);
+}
+
 function openDetail(id) {
   const route = KOKUDO_ROUTES.find(r => r.id === id);
   if (!route) return;
@@ -403,6 +416,7 @@ function openDetail(id) {
 
   document.getElementById('detail-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
+  _lockBgScroll();
 }
 
 function _updateDetailStatus(id, d) {
@@ -432,6 +446,7 @@ function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   activeDetailId = null;
   document.getElementById('app-body').classList.remove('modal-open');
+  _unlockBgScroll();
 }
 
 // === 一覧用詳細シート（表示専用） ===
@@ -535,12 +550,14 @@ function openGalleryDetail(id) {
 
   document.getElementById('gallery-detail-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
+  _lockBgScroll();
 }
 
 function closeGalleryDetail() {
   document.getElementById('gallery-detail-overlay').classList.remove('open');
   activeGalleryDetailId = null;
   document.getElementById('app-body').classList.remove('modal-open');
+  _unlockBgScroll();
 }
 
 // wikitextのマークアップを平文に変換
