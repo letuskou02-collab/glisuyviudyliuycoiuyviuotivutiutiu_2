@@ -334,57 +334,34 @@ function renderAll() {
 // === 国道詳細シート ===
 let activeDetailId = null;
 
-// モーダル表示中の背景スクロール防止（overflow:hidden方式）
+// モーダル表示中の背景スクロール防止（body固定方式 - iOS Safari最確実）
 let _scrollY = 0;
-
-function _preventTouchMove(e) {
-  // スクロール可能な子要素（シート内）のスクロールは許可
-  let el = e.target;
-  while (el && el !== document.body) {
-    if (el.classList && (
-      el.classList.contains('modal-sheet') ||
-      el.classList.contains('detail-sheet') ||
-      el.classList.contains('import-modal-sheet') ||
-      el.classList.contains('import-modal')
-    )) return;
-    el = el.parentElement;
-  }
-  e.preventDefault();
-}
 
 function _lockBgScroll() {
   const appBody = document.getElementById('app-body');
   _scrollY = appBody.scrollTop;
+  appBody.style.position = 'fixed';
+  appBody.style.top = `-${_scrollY}px`;
+  appBody.style.left = '0';
+  appBody.style.right = '0';
   appBody.style.overflow = 'hidden';
-  appBody.style.height = '100dvh';
-  appBody.style.maxHeight = '100dvh';
-  document.addEventListener('touchmove', _preventTouchMove, { passive: false });
   _startViewportWatch();
 }
 function _unlockBgScroll() {
   const appBody = document.getElementById('app-body');
+  appBody.style.position = '';
+  appBody.style.top = '';
+  appBody.style.left = '';
+  appBody.style.right = '';
   appBody.style.overflow = '';
-  appBody.style.height = '';
-  appBody.style.maxHeight = '';
   appBody.scrollTop = _scrollY;
-  document.removeEventListener('touchmove', _preventTouchMove);
-  const tabBar = document.querySelector('.bottom-tab-bar');
-  if (tabBar) { tabBar.style.display = ''; tabBar.style.bottom = ''; tabBar.style.position = ''; }
   _stopViewportWatch();
 }
 
-// キーボード表示時にモーダルオーバーレイがずれないよう visualViewport で補正
+// キーボード表示時にタブバーを非表示（visualViewport）
 function _onViewportResize() {
   const vv = window.visualViewport;
   if (!vv) return;
-  const overlays = document.querySelectorAll(
-    '.modal-overlay.open, .import-modal-overlay.open'
-  );
-  overlays.forEach(el => {
-    el.style.top = vv.offsetTop + 'px';
-    el.style.height = vv.height + 'px';
-  });
-  // キーボード表示中はタブバーを非表示
   const tabBar = document.querySelector('.bottom-tab-bar');
   if (tabBar) {
     const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
@@ -402,7 +379,8 @@ function _stopViewportWatch() {
     window.visualViewport.removeEventListener('resize', _onViewportResize);
     window.visualViewport.removeEventListener('scroll', _onViewportResize);
   }
-  // スタイルをリセット
+  const tabBar = document.querySelector('.bottom-tab-bar');
+  if (tabBar) tabBar.style.display = '';
   document.querySelectorAll('.modal-overlay, .import-modal-overlay').forEach(el => {
     el.style.top = '';
     el.style.height = '';
