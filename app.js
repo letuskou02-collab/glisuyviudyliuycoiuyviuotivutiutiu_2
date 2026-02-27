@@ -342,6 +342,7 @@ function _lockBgScroll() {
   appBody.style.overflow = 'hidden';
   appBody.style.height = '100dvh';
   appBody.style.maxHeight = '100dvh';
+  _startViewportWatch();
 }
 function _unlockBgScroll() {
   const appBody = document.getElementById('app-body');
@@ -349,6 +350,37 @@ function _unlockBgScroll() {
   appBody.style.height = '';
   appBody.style.maxHeight = '';
   appBody.scrollTop = _scrollY;
+  _stopViewportWatch();
+}
+
+// キーボード表示時にモーダルオーバーレイがずれないよう visualViewport で補正
+function _onViewportResize() {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const overlays = document.querySelectorAll(
+    '.modal-overlay.open, .import-modal-overlay.open'
+  );
+  overlays.forEach(el => {
+    el.style.top = vv.offsetTop + 'px';
+    el.style.height = vv.height + 'px';
+  });
+}
+function _startViewportWatch() {
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', _onViewportResize);
+    window.visualViewport.addEventListener('scroll', _onViewportResize);
+  }
+}
+function _stopViewportWatch() {
+  if (window.visualViewport) {
+    window.visualViewport.removeEventListener('resize', _onViewportResize);
+    window.visualViewport.removeEventListener('scroll', _onViewportResize);
+  }
+  // スタイルをリセット
+  document.querySelectorAll('.modal-overlay, .import-modal-overlay').forEach(el => {
+    el.style.top = '';
+    el.style.height = '';
+  });
 }
 
 function openDetail(id) {
