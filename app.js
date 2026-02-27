@@ -1443,8 +1443,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEvents();
   renderAll();
 
-  // キーボード表示時にタブバーを非表示
+  // タブバー制御（初回遅延表示 + キーボード表示時非表示）
   const tabBar = document.querySelector('.bottom-tab-bar');
+  tabBar.style.display = 'none';
+  setTimeout(() => { tabBar.style.display = ''; }, 500);
   document.addEventListener('focusin', (e) => {
     if (e.target.matches('input, textarea, select')) {
       tabBar.style.display = 'none';
