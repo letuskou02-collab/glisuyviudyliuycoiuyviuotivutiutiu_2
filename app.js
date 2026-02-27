@@ -1443,25 +1443,28 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEvents();
   renderAll();
 
-  // キーボード表示時にタブバーを非表示、完全に閉じたら再表示
+  // キーボード表示時にタブバーを非表示
   const tabBar = document.querySelector('.bottom-tab-bar');
-  const fullHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  let kbOpen = false;
   document.addEventListener('focusin', (e) => {
     if (e.target.matches('input, textarea, select')) {
+      kbOpen = true;
       tabBar.style.display = 'none';
     }
   });
+  document.addEventListener('focusout', () => {
+    kbOpen = false;
+  });
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', () => {
-      const ratio = window.visualViewport.height / fullHeight;
-      if (ratio > 0.85) {
-        // キーボードがほぼ閉じた
+      // キーボードが閉じた（ビューポートが画面の75%超に戻った）かつfocus中でない
+      if (!kbOpen && window.visualViewport.height > window.screen.height * 0.75) {
         tabBar.style.display = '';
       }
     });
   } else {
     document.addEventListener('focusout', () => {
-      tabBar.style.display = '';
+      setTimeout(() => { tabBar.style.display = ''; }, 300);
     });
   }
 
