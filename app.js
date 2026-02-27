@@ -1445,22 +1445,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // キーボード表示時にタブバーを非表示、閉じたらスクロール位置を補正して再表示
   const tabBar = document.querySelector('.bottom-tab-bar');
-  const appBody = document.getElementById('app-body');
   let kbOpen = false;
   let scrollBeforeKb = 0;
   document.addEventListener('focusin', (e) => {
     if (e.target.matches('input, textarea, select')) {
       kbOpen = true;
-      scrollBeforeKb = appBody.scrollTop;
+      scrollBeforeKb = window.scrollY;
       tabBar.style.display = 'none';
     }
   });
   document.addEventListener('focusout', () => {
     kbOpen = false;
-    // キーボードが閉じきるのを待ってスクロール位置を戻す
     setTimeout(() => {
       if (!kbOpen) {
-        appBody.scrollTop = scrollBeforeKb;
+        window.scrollTo(0, scrollBeforeKb);
         tabBar.style.display = '';
       }
     }, 350);
