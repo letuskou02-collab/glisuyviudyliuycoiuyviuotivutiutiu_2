@@ -36,7 +36,7 @@ input, select, textarea { font-family: inherit; }
 .app-body {
   width: 100%;
   padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: 0;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100dvh;
@@ -45,17 +45,15 @@ input, select, textarea { font-family: inherit; }
 
 /* === ボトムタブバー === */
 .bottom-tab-bar {
-  position: sticky;
+  position: fixed;
   bottom: 0;
   left: 0; right: 0;
-  width: 100%;
   height: calc(60px + env(safe-area-inset-bottom, 0px));
   padding-bottom: env(safe-area-inset-bottom, 0px);
   background: #ffffff;
   border-top: 1px solid rgba(0,0,0,0.12);
   display: flex;
   z-index: 9999;
-  flex-shrink: 0;
 }
 .tab-item {
   flex: 1;
@@ -672,7 +670,7 @@ input, select, textarea { font-family: inherit; }
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   animation: slideUp 0.25s ease;
-  padding-bottom: 0;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 @keyframes slideUp {
   from { transform: translateY(30px); opacity: 0; }
