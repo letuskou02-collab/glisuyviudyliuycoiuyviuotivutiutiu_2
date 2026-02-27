@@ -1286,9 +1286,10 @@ function setupEvents() {
     setRouteData(id, { collected: newVal, date: newVal ? today : null });
     renderAll();
     _updateDetailStatus(id, getRouteData(id));
-    // バッジも更新
+    // バッジも更新（sign-imgクラスを維持）
     const badge = document.getElementById('detail-route-badge');
-    badge.className = 'detail-route-badge' + (newVal ? ' collected' : '');
+    const hasSign = badge.classList.contains('sign-img');
+    badge.className = 'detail-route-badge' + (hasSign ? ' sign-img' : '') + (newVal ? ' collected' : '');
     showToast(newVal ? `国道${id}号 ✓ 取得済みに設定` : `国道${id}号 未取得に戻しました`, newVal ? 'success' : 'default');
   });
 
