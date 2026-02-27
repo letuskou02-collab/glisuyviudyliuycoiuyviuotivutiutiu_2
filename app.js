@@ -334,17 +334,25 @@ function renderAll() {
 // === 国道詳細シート ===
 let activeDetailId = null;
 
-// モーダル表示中の背景スクロール防止
-function _preventBgScroll(e) {
-  // detail-sheet の内側タッチはスクロール許可
-  if (e.target.closest('.detail-sheet')) return;
-  e.preventDefault();
-}
+// モーダル表示中の背景スクロール防止（position:fixed方式 - iOS Safari対応）
+let _scrollY = 0;
 function _lockBgScroll() {
-  document.addEventListener('touchmove', _preventBgScroll, { passive: false });
+  const appBody = document.getElementById('app-body');
+  _scrollY = appBody.scrollTop;
+  appBody.style.position = 'fixed';
+  appBody.style.top = `-${_scrollY}px`;
+  appBody.style.left = '0';
+  appBody.style.right = '0';
+  appBody.style.overflow = 'hidden';
 }
 function _unlockBgScroll() {
-  document.removeEventListener('touchmove', _preventBgScroll);
+  const appBody = document.getElementById('app-body');
+  appBody.style.position = '';
+  appBody.style.top = '';
+  appBody.style.left = '';
+  appBody.style.right = '';
+  appBody.style.overflow = '';
+  appBody.scrollTop = _scrollY;
 }
 
 function openDetail(id) {
@@ -665,6 +673,7 @@ function openModal(id) {
 
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
+  _lockBgScroll();
 }
 
 function closeModal(save = true) {
@@ -684,6 +693,7 @@ function closeModal(save = true) {
   document.getElementById('modal-overlay').classList.remove('open');
   activeModalId = null;
   document.getElementById('app-body').classList.remove('modal-open');
+  _unlockBgScroll();
 }
 
 // === エクスポート / インポート / リセット ===
@@ -725,11 +735,13 @@ function importData() {
 function openImportModal() {
   document.getElementById('import-modal-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
+  _lockBgScroll();
 }
 function closeImportModal() {
   document.getElementById('import-modal-overlay').classList.remove('open');
   _importPending = null;
   document.getElementById('app-body').classList.remove('modal-open');
+  _unlockBgScroll();
 }
 
 function applyImportMerge() {
@@ -1095,6 +1107,7 @@ let pickerLatLng = null;
 function openMapPicker() {
   const overlay = document.getElementById('map-picker-overlay');
   overlay.style.display = 'flex';
+  _lockBgScroll();
 
   // 現在の緯度経度があれば中心に、なければ日本全体
   const curLat = parseFloat(document.getElementById('modal-lat-input').value);
@@ -1161,6 +1174,7 @@ function updatePickerHint(latlng) {
 
 function closeMapPicker() {
   document.getElementById('map-picker-overlay').style.display = 'none';
+  _unlockBgScroll();
 }
 
 function confirmMapPicker() {
