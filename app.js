@@ -334,9 +334,8 @@ function renderAll() {
 // === 国道詳細シート ===
 let activeDetailId = null;
 
-// モーダル表示中の背景スクロール防止（body固定方式 - iOS Safari最確実）
+// モーダル表示中の背景スクロール防止（position:fixed方式 - iOS Safari対応）
 let _scrollY = 0;
-
 function _lockBgScroll() {
   const appBody = document.getElementById('app-body');
   _scrollY = appBody.scrollTop;
@@ -345,7 +344,6 @@ function _lockBgScroll() {
   appBody.style.left = '0';
   appBody.style.right = '0';
   appBody.style.overflow = 'hidden';
-  _startViewportWatch();
 }
 function _unlockBgScroll() {
   const appBody = document.getElementById('app-body');
@@ -355,36 +353,6 @@ function _unlockBgScroll() {
   appBody.style.right = '';
   appBody.style.overflow = '';
   appBody.scrollTop = _scrollY;
-  _stopViewportWatch();
-}
-
-// キーボード表示時にタブバーを非表示（visualViewport）
-function _onViewportResize() {
-  const vv = window.visualViewport;
-  if (!vv) return;
-  const tabBar = document.querySelector('.bottom-tab-bar');
-  if (tabBar) {
-    const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
-    tabBar.style.display = keyboardHeight > 10 ? 'none' : '';
-  }
-}
-function _startViewportWatch() {
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', _onViewportResize);
-    window.visualViewport.addEventListener('scroll', _onViewportResize);
-  }
-}
-function _stopViewportWatch() {
-  if (window.visualViewport) {
-    window.visualViewport.removeEventListener('resize', _onViewportResize);
-    window.visualViewport.removeEventListener('scroll', _onViewportResize);
-  }
-  const tabBar = document.querySelector('.bottom-tab-bar');
-  if (tabBar) tabBar.style.display = '';
-  document.querySelectorAll('.modal-overlay, .import-modal-overlay').forEach(el => {
-    el.style.top = '';
-    el.style.height = '';
-  });
 }
 
 function openDetail(id) {
