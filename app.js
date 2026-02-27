@@ -1443,6 +1443,17 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEvents();
   renderAll();
 
+  // キーボード表示時にタブバーを非表示
+  const tabBar = document.querySelector('.bottom-tab-bar');
+  document.addEventListener('focusin', (e) => {
+    if (e.target.matches('input, textarea, select')) {
+      tabBar.style.display = 'none';
+    }
+  });
+  document.addEventListener('focusout', () => {
+    tabBar.style.display = '';
+  });
+
   // メニューカードの遷移イベント
   document.querySelectorAll('.menu-card').forEach(btn => {
     btn.addEventListener('click', () => {
