@@ -628,6 +628,45 @@ function closeGalleryDetail() {
   _unlockBgScroll();
 }
 
+async function exportGalleryDetail() {
+  const sheet = document.querySelector('#gallery-detail-overlay .detail-sheet');
+  if (!sheet) return;
+  const id = activeGalleryDetailId;
+  showToast('画像を生成中…', 'info');
+  try {
+    const canvas = await html2canvas(sheet, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#f2f2f7',
+      scrollY: -sheet.scrollTop,
+      windowWidth: sheet.scrollWidth,
+      windowHeight: sheet.scrollHeight,
+    });
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], `kokudo${id}号.png`, { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: `国道${id}号` });
+        } catch (e) {
+          if (e.name !== 'AbortError') showToast('共有に失敗しました', 'error');
+        }
+      } else {
+        // フォールバック: ダウンロード
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kokudo${id}号.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('画像を保存しました', 'success');
+      }
+    }, 'image/png');
+  } catch (e) {
+    showToast('画像生成に失敗しました', 'error');
+  }
+}
+
 // wikitextのマークアップを平文に変換
 function _cleanWikitext(s) {
   for (let i = 0; i < 8; i++) {
@@ -1364,6 +1403,7 @@ function setupEvents() {
   });
   // 一覧用詳細シート
   document.getElementById('gd-close').addEventListener('click', closeGalleryDetail);
+  document.getElementById('gd-export').addEventListener('click', exportGalleryDetail);
   document.getElementById('gallery-detail-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('gallery-detail-overlay')) closeGalleryDetail();
   });
