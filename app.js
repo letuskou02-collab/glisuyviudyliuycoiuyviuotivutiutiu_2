@@ -363,24 +363,29 @@ function _onViewportResize() {
   const vv = window.visualViewport;
   if (!vv) return;
   const tabBar = document.querySelector('.bottom-tab-bar');
-  if (tabBar) {
-    const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
-    tabBar.style.display = keyboardHeight > 10 ? 'none' : '';
+  if (!tabBar) return;
+  const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
+  if (keyboardHeight > 10) {
+    tabBar.style.display = 'none';
+  } else {
+    // キーボードが閉じきってからタブバーを戻す
+    setTimeout(() => { tabBar.style.display = ''; }, 150);
   }
 }
 function _startViewportWatch() {
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', _onViewportResize);
-    window.visualViewport.addEventListener('scroll', _onViewportResize);
   }
 }
 function _stopViewportWatch() {
   if (window.visualViewport) {
     window.visualViewport.removeEventListener('resize', _onViewportResize);
-    window.visualViewport.removeEventListener('scroll', _onViewportResize);
   }
-  const tabBar = document.querySelector('.bottom-tab-bar');
-  if (tabBar) tabBar.style.display = '';
+  // モーダルを閉じる時もキーボードが閉じきってからタブバーを戻す
+  setTimeout(() => {
+    const tabBar = document.querySelector('.bottom-tab-bar');
+    if (tabBar) tabBar.style.display = '';
+  }, 150);
   document.querySelectorAll('.modal-overlay, .import-modal-overlay').forEach(el => {
     el.style.top = '';
     el.style.height = '';
