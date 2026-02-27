@@ -1442,6 +1442,15 @@ function showUpdateBanner(newWorker) {
 
 // === 起動 ===
 document.addEventListener('DOMContentLoaded', () => {
+  // ウェルカムスクリーン: safe-area確定を待ってからフェードアウト
+  const welcomeScreen = document.getElementById('welcome-screen');
+  setTimeout(() => {
+    welcomeScreen.classList.add('fade-out');
+    welcomeScreen.addEventListener('transitionend', () => {
+      welcomeScreen.classList.add('hidden');
+    }, { once: true });
+  }, 700);
+
   loadData();
   setupEvents();
   renderAll();
