@@ -1,5 +1,5 @@
 // ビルド時に自動更新される（デプロイのたびに変わる）
-const CACHE_NAME = 'kokudo-sticker-20260227125927';
+const CACHE_NAME = 'kokudo-sticker-20260227193105';
 const ASSETS = [
   './',
   './index.html',

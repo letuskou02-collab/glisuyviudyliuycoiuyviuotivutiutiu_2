@@ -334,24 +334,20 @@ function renderAll() {
 // === 国道詳細シート ===
 let activeDetailId = null;
 
-// モーダル表示中の背景スクロール防止（position:fixed方式 - iOS Safari対応）
+// モーダル表示中の背景スクロール防止（overflow:hidden方式）
 let _scrollY = 0;
 function _lockBgScroll() {
   const appBody = document.getElementById('app-body');
   _scrollY = appBody.scrollTop;
-  appBody.style.position = 'fixed';
-  appBody.style.top = `-${_scrollY}px`;
-  appBody.style.left = '0';
-  appBody.style.right = '0';
   appBody.style.overflow = 'hidden';
+  appBody.style.height = '100dvh';
+  appBody.style.maxHeight = '100dvh';
 }
 function _unlockBgScroll() {
   const appBody = document.getElementById('app-body');
-  appBody.style.position = '';
-  appBody.style.top = '';
-  appBody.style.left = '';
-  appBody.style.right = '';
   appBody.style.overflow = '';
+  appBody.style.height = '';
+  appBody.style.maxHeight = '';
   appBody.scrollTop = _scrollY;
 }
 
