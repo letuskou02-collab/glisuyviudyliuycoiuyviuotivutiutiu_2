@@ -1443,18 +1443,27 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEvents();
   renderAll();
 
-  // タブバー制御（初回遅延表示 + キーボード表示時非表示）
+  // キーボード表示時にタブバーを非表示、完全に閉じたら再表示
   const tabBar = document.querySelector('.bottom-tab-bar');
-  tabBar.style.display = 'none';
-  setTimeout(() => { tabBar.style.display = ''; }, 500);
+  const fullHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
   document.addEventListener('focusin', (e) => {
     if (e.target.matches('input, textarea, select')) {
       tabBar.style.display = 'none';
     }
   });
-  document.addEventListener('focusout', () => {
-    tabBar.style.display = '';
-  });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const ratio = window.visualViewport.height / fullHeight;
+      if (ratio > 0.85) {
+        // キーボードがほぼ閉じた
+        tabBar.style.display = '';
+      }
+    });
+  } else {
+    document.addEventListener('focusout', () => {
+      tabBar.style.display = '';
+    });
+  }
 
   // メニューカードの遷移イベント
   document.querySelectorAll('.menu-card').forEach(btn => {
