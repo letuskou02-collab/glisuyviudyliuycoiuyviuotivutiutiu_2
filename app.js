@@ -457,6 +457,43 @@ function closeDetail() {
   _unlockBgScroll();
 }
 
+async function exportDetail() {
+  if (activeDetailId === null) return;
+  const route = KOKUDO_ROUTES.find(r => r.id === activeDetailId);
+  const d = getRouteData(activeDetailId);
+  if (!route) return;
+
+  const lines = [
+    `国道${activeDetailId}号`,
+    `地域: ${route.region}`,
+    `起点: ${route.from}`,
+    `終点: ${route.to}`,
+    '',
+    `取得状況: ${d.collected ? '取得済み' : '未取得'}`,
+  ];
+  if (d.collected) {
+    if (d.date) lines.push(`取得日: ${d.date}`);
+    if (d.location) lines.push(`取得場所: ${d.location}`);
+    if (d.memo) lines.push(`メモ: ${d.memo}`);
+  }
+  const text = lines.join('\n');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `国道${activeDetailId}号`, text });
+    } catch (e) {
+      if (e.name !== 'AbortError') showToast('共有に失敗しました', 'error');
+    }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('クリップボードにコピーしました', 'success');
+    } catch (e) {
+      showToast('共有非対応の環境です', 'error');
+    }
+  }
+}
+
 // === 一覧用詳細シート（表示専用） ===
 let activeGalleryDetailId = null;
 
@@ -566,6 +603,58 @@ function closeGalleryDetail() {
   activeGalleryDetailId = null;
   document.getElementById('app-body').classList.remove('modal-open');
   _unlockBgScroll();
+}
+
+async function exportGalleryDetail() {
+  if (activeGalleryDetailId === null) return;
+  const sheet = document.querySelector('#gallery-detail-overlay .detail-sheet');
+  if (!sheet) return;
+
+  showToast('画像を生成中…', 'info');
+  try {
+    // スクロールを先頭に戻してから全体キャプチャ
+    sheet.scrollTop = 0;
+    const canvas = await html2canvas(sheet, {
+      scale: 2,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#f2f2f7',
+      scrollY: 0,
+      windowHeight: sheet.scrollHeight,
+      height: sheet.scrollHeight,
+    });
+
+    const id = activeGalleryDetailId;
+    canvas.toBlob(async (blob) => {
+      const fileName = `kokudo${id}gou.png`;
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: `国道${id}号` });
+        } catch (e) {
+          if (e.name !== 'AbortError') {
+            // 共有キャンセル以外はダウンロードにフォールバック
+            _downloadBlob(blob, fileName);
+          }
+        }
+      } else {
+        _downloadBlob(blob, fileName);
+      }
+    }, 'image/png');
+  } catch (e) {
+    console.error(e);
+    showToast('画像生成に失敗しました', 'error');
+  }
+}
+
+function _downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // wikitextのマークアップを平文に変換
@@ -1298,11 +1387,13 @@ function setupEvents() {
 
   // 詳細シート
   document.getElementById('detail-close').addEventListener('click', closeDetail);
+  document.getElementById('detail-export').addEventListener('click', exportDetail);
   document.getElementById('detail-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('detail-overlay')) closeDetail();
   });
   // 一覧用詳細シート
   document.getElementById('gd-close').addEventListener('click', closeGalleryDetail);
+  document.getElementById('gd-export').addEventListener('click', exportGalleryDetail);
   document.getElementById('gallery-detail-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('gallery-detail-overlay')) closeGalleryDetail();
   });
