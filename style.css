@@ -1078,11 +1078,6 @@ input, select, textarea { font-family: inherit; }
   justify-content: space-between;
   padding: 8px 16px 12px;
 }
-.detail-header-btns {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 .detail-hero {
   display: flex;
   align-items: center;
