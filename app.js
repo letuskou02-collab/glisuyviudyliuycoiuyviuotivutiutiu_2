@@ -1443,6 +1443,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEvents();
   renderAll();
 
+  // 初回起動時タブバーを遅延表示（iOS PWA起動時の浮き上がり防止）
+  const tabBar = document.querySelector('.bottom-tab-bar');
+  tabBar.style.display = 'none';
+  setTimeout(() => { tabBar.style.display = ''; }, 500);
+
   // キーボード表示時にタブバーを非表示
   const tabBar = document.querySelector('.bottom-tab-bar');
   document.addEventListener('focusin', (e) => {
