@@ -336,14 +336,29 @@ let activeDetailId = null;
 
 // モーダル表示中の背景スクロール防止（overflow:hidden方式）
 let _scrollY = 0;
+
+function _preventTouchMove(e) {
+  // スクロール可能な子要素（シート内）のスクロールは許可
+  let el = e.target;
+  while (el && el !== document.body) {
+    if (el.classList && (
+      el.classList.contains('modal-sheet') ||
+      el.classList.contains('detail-sheet') ||
+      el.classList.contains('import-modal-sheet') ||
+      el.classList.contains('import-modal')
+    )) return;
+    el = el.parentElement;
+  }
+  e.preventDefault();
+}
+
 function _lockBgScroll() {
   const appBody = document.getElementById('app-body');
   _scrollY = appBody.scrollTop;
   appBody.style.overflow = 'hidden';
   appBody.style.height = '100dvh';
   appBody.style.maxHeight = '100dvh';
-  const tabBar = document.querySelector('.bottom-tab-bar');
-  if (tabBar) tabBar.style.display = 'none';
+  document.addEventListener('touchmove', _preventTouchMove, { passive: false });
   _startViewportWatch();
 }
 function _unlockBgScroll() {
@@ -352,8 +367,9 @@ function _unlockBgScroll() {
   appBody.style.height = '';
   appBody.style.maxHeight = '';
   appBody.scrollTop = _scrollY;
+  document.removeEventListener('touchmove', _preventTouchMove);
   const tabBar = document.querySelector('.bottom-tab-bar');
-  if (tabBar) tabBar.style.display = '';
+  if (tabBar) { tabBar.style.display = ''; tabBar.style.bottom = ''; tabBar.style.position = ''; }
   _stopViewportWatch();
 }
 
@@ -368,6 +384,12 @@ function _onViewportResize() {
     el.style.top = vv.offsetTop + 'px';
     el.style.height = vv.height + 'px';
   });
+  // キーボード表示中はタブバーを非表示
+  const tabBar = document.querySelector('.bottom-tab-bar');
+  if (tabBar) {
+    const keyboardHeight = window.innerHeight - vv.height - vv.offsetTop;
+    tabBar.style.display = keyboardHeight > 10 ? 'none' : '';
+  }
 }
 function _startViewportWatch() {
   if (window.visualViewport) {
