@@ -1445,28 +1445,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // キーボード表示時にタブバーを非表示
   const tabBar = document.querySelector('.bottom-tab-bar');
-  let kbOpen = false;
   document.addEventListener('focusin', (e) => {
     if (e.target.matches('input, textarea, select')) {
-      kbOpen = true;
       tabBar.style.display = 'none';
     }
   });
   document.addEventListener('focusout', () => {
-    kbOpen = false;
+    tabBar.style.display = '';
   });
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      // キーボードが閉じた（ビューポートが画面の75%超に戻った）かつfocus中でない
-      if (!kbOpen && window.visualViewport.height > window.screen.height * 0.75) {
-        tabBar.style.display = '';
-      }
-    });
-  } else {
-    document.addEventListener('focusout', () => {
-      setTimeout(() => { tabBar.style.display = ''; }, 300);
-    });
-  }
 
   // メニューカードの遷移イベント
   document.querySelectorAll('.menu-card').forEach(btn => {
