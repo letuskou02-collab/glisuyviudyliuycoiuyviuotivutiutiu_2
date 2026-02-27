@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#003087" />
+  <meta name="description" content="日本の一般国道ステッカーの取得状況を記録するPWAアプリ" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="国道ステッカー" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="stylesheet" href="./lib/leaflet.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <title>国道ステッカーコレクション</title>
+</head>
+<body>
+
+  <!-- ステータスバー固定カバー -->
+  <div class="status-bar-cover"></div>
+
+  <!-- ページコンテナ -->
+  <main class="app-body" id="app-body">
+
+    <!-- ===== メニュー（初回起動） ===== -->
+    <div id="view-menu" class="view-page menu-page" style="display:none">
+      <div class="menu-hero">
+        <div class="menu-logo">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" width="120" height="132" aria-label="国道標識">
+            <path d="M100 8 L192 58 L192 212 L8 212 L8 58 Z" fill="none" stroke="white" stroke-width="14" stroke-linejoin="round"/>
+            <path d="M100 22 L180 66 L180 198 L20 198 L20 66 Z" fill="#0057a8" stroke="#0057a8" stroke-width="2" stroke-linejoin="round"/>
+            <text x="100" y="80" text-anchor="middle" font-family="'Hiragino Sans','Yu Gothic','Meiryo',sans-serif" font-weight="700" font-size="28" fill="white" letter-spacing="6">国　道</text>
+            <text x="100" y="158" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',sans-serif" font-weight="900" font-size="100" fill="white" letter-spacing="-4">1</text>
+            <text x="100" y="188" text-anchor="middle" font-family="'Arial Black','Helvetica Neue',sans-serif" font-weight="700" font-size="20" fill="white" letter-spacing="4">ROUTE</text>
+          </svg>
+        </div>
+        <h1 class="menu-title">国道ステッカー<br>コレクション</h1>
+        <p class="menu-sub">日本全国の国道ステッカーを集めよう</p>
+      </div>
+      <div class="menu-cards">
+        <button class="menu-card" data-goto="home">
+          <span class="menu-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12L12 3L21 12V21H15V15H9V21H3V12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/></svg></span>
+          <div class="menu-card-body">
+            <div class="menu-card-title">ホーム</div>
+            <div class="menu-card-desc">進捗サマリー・最近の取得</div>
+          </div>
+          <span class="menu-card-arrow">›</span>
+        </button>
+        <button class="menu-card" data-goto="list">
+          <span class="menu-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="5" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="11" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="17" width="10" height="2" rx="1" fill="currentColor"/><circle cx="20" cy="18" r="3.5" fill="currentColor"/><path d="M18.5 18L19.5 19L21.5 17" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <div class="menu-card-body">
+            <div class="menu-card-title">国道ステッカー登録</div>
+            <div class="menu-card-desc">国道ステッカーの取得を記録</div>
+          </div>
+          <span class="menu-card-arrow">›</span>
+        </button>
+        <button class="menu-card" data-goto="gallery">
+          <span class="menu-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="8.5" cy="11" r="1.5" fill="currentColor"/><path d="M3 17L8 12L11 15L15 10L21 17" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M8 6V4M12 6V3M16 6V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+          <div class="menu-card-body">
+            <div class="menu-card-title">一覧</div>
+            <div class="menu-card-desc">国道名・場所・写真を一覧表示</div>
+          </div>
+          <span class="menu-card-arrow">›</span>
+        </button>
+        <button class="menu-card" data-goto="other">
+          <span class="menu-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="8" r="1.2" fill="currentColor"/><rect x="11" y="11" width="2" height="6" rx="1" fill="currentColor"/></svg></span>
+          <div class="menu-card-body">
+            <div class="menu-card-title">その他</div>
+            <div class="menu-card-desc">データ管理・エクスポート</div>
+          </div>
+          <span class="menu-card-arrow">›</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== ホーム ===== -->
+    <div id="view-home" class="view-page">
+
+      <!-- 進捗カード -->
+      <div class="home-progress-card">
+        <div class="progress-nums">
+          <span class="big" id="stat-collected">0</span>
+          <span class="slash">/</span>
+          <span class="total" id="stat-total">0</span>
+          <span class="pct" id="stat-pct">0%</span>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-label">取得済み</div>
+      </div>
+
+      <!-- 地方別サマリー -->
+      <section class="home-section">
+        <div class="home-section-title">地方別進捗</div>
+        <div class="region-cards-scroll" id="region-cards"></div>
+      </section>
+
+      <!-- 最近の取得 -->
+      <section class="home-section">
+        <div class="home-section-title">最近の取得</div>
+        <div id="recent-list" class="recent-list"></div>
+      </section>
+
+      <!-- 取得場所地図 -->
+      <section class="home-section home-section-map">
+        <div class="home-section-title">取得場所マップ</div>
+        <div class="home-map-wrapper">
+          <div id="home-map-container"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== 登録（国道一覧） ===== -->
+    <div id="view-list" class="view-page" style="display:none">
+      <div class="page-header">
+        <h2><span class="page-header-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="5" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="11" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="17" width="10" height="2" rx="1" fill="currentColor"/><circle cx="20" cy="18" r="3.5" fill="currentColor"/><path d="M18.5 18L19.5 19L21.5 17" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 国道ステッカー登録</h2>
+      </div>
+
+      <div class="list-toolbar">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="search" id="search-input" placeholder="号数・地方・区間で検索…" autocomplete="off" />
+        </div>
+        <div class="filter-tabs">
+          <button class="tab-btn active" data-filter="all">すべて</button>
+          <button class="tab-btn" data-filter="collected">取得済み</button>
+          <button class="tab-btn" data-filter="not-collected">未取得</button>
+        </div>
+        <div class="select-row">
+          <select id="region-select">
+            <option value="">地方：すべて</option>
+            <option value="北海道">北海道</option>
+            <option value="東北">東北</option>
+            <option value="関東">関東</option>
+            <option value="中部">中部</option>
+            <option value="北陸">北陸</option>
+            <option value="近畿">近畿</option>
+            <option value="中国">中国</option>
+            <option value="四国">四国</option>
+            <option value="九州">九州</option>
+            <option value="沖縄">沖縄</option>
+          </select>
+          <select id="type-select">
+            <option value="">種別：すべて</option>
+            <option value="一桁">一桁国道</option>
+            <option value="二桁">二桁国道</option>
+            <option value="三桁">三桁国道</option>
+          </select>
+        </div>
+        <div class="toolbar-right">
+          <span id="section-count" class="section-count"></span>
+          <div class="view-toggle">
+            <button class="active" id="btn-grid-view" title="グリッド">⊞</button>
+            <button id="btn-list-view" title="リスト">≡</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="routes-container" class="routes-grid"></div>
+    </div>
+
+    <!-- ===== 一覧 ===== -->
+    <div id="view-gallery" class="view-page" style="display:none">
+      <div class="page-header">
+        <h2><span class="page-header-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="8.5" cy="11" r="1.5" fill="currentColor"/><path d="M3 17L8 12L11 15L15 10L21 17" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M8 6V4M12 6V3M16 6V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span> 一覧</h2>
+      </div>
+      <div class="gallery-toolbar">
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input type="search" id="gallery-search-input" placeholder="国道番号で検索…" autocomplete="off" inputmode="numeric" />
+        </div>
+        <div class="select-row">
+          <select id="gallery-sort-select">
+            <option value="date-desc">📅 取得日が新しい順</option>
+            <option value="date-asc">📅 取得日が古い順</option>
+            <option value="number-asc">🔢 国道番号順（昇順）</option>
+            <option value="number-desc">🔢 国道番号順（降順）</option>
+            <option value="pref-asc">📍 都道府県順（起点）</option>
+          </select>
+        </div>
+      </div>
+      <div id="gallery-container" class="gallery-grid"></div>
+    </div>
+
+    <!-- ===== その他 ===== -->
+    <div id="view-other" class="view-page other-page" style="display:none">
+      <div class="page-header">
+        <h2><span class="page-header-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="8" r="1.2" fill="currentColor"/><rect x="11" y="11" width="2" height="6" rx="1" fill="currentColor"/></svg></span> その他</h2>
+      </div>
+
+      <div class="other-section">
+        <div class="other-group-label">データ管理</div>
+        <div class="other-group">
+          <div class="other-row" id="btn-export">
+            <span class="other-row-icon">📤</span>
+            <div class="other-row-body">
+              <div class="other-row-title">エクスポート</div>
+              <div class="other-row-desc">JSONファイルとして保存</div>
+            </div>
+            <span class="arrow">›</span>
+          </div>
+          <div class="other-row" id="btn-import">
+            <span class="other-row-icon">📥</span>
+            <div class="other-row-body">
+              <div class="other-row-title">インポート</div>
+              <div class="other-row-desc">JSONファイルから復元・マージ</div>
+            </div>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+
+        <div class="other-group-label">最新版に更新</div>
+        <div class="other-group">
+          <div class="other-row" id="btn-clear-cache">
+            <span class="other-row-icon">🔄</span>
+            <div class="other-row-body">
+              <div class="other-row-title">最新版に更新</div>
+              <div class="other-row-desc">キャッシュをクリアして最新版を再取得</div>
+            </div>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+
+        <div class="other-group-label">データの削除</div>
+        <div class="other-group">
+          <div class="other-row danger" id="btn-reset">
+            <span class="other-row-icon">🗑️</span>
+            <div class="other-row-body">
+              <div class="other-row-title">すべてリセット</div>
+              <div class="other-row-desc">全記録を削除（元に戻せません）</div>
+            </div>
+            <span class="arrow">›</span>
+          </div>
+        </div>
+
+        <div class="other-group-label">アプリについて</div>
+        <div class="other-info">
+          国道ステッカーコレクション<br>
+          日本全国の一般国道ステッカー収集記録アプリ
+        </div>
+      </div>
+    </div>
+
+    <!-- 販売店マップ -->
+    <div id="view-shop" class="view-page shop-page" style="display:none">
+      <div class="page-header">
+        <h2><span class="page-header-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.686 2 6 4.686 6 8C6 12.5 12 21 12 21C12 21 18 12.5 18 8C18 4.686 15.314 2 12 2Z" stroke="currentColor" stroke-width="1.8" fill="none"/><circle cx="12" cy="8" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg></span> 販売店マップ</h2>
+      </div>
+      <div class="shop-content">
+        <div class="shop-map-icon">🗺️</div>
+        <p class="shop-desc">ブイカントリー公式の販売店マップを開きます。</p>
+        <button class="shop-open-btn" id="btn-open-shop">
+          販売店マップを開く
+        </button>
+        <p class="shop-note">Safariなどのブラウザで開きます</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ボトムタブバー -->
+  <nav class="bottom-tab-bar">
+    <button class="tab-item active" data-view="home">
+      <span class="tab-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 12L12 3L21 12V21H15V15H9V21H3V12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </span>
+      <span class="tab-label">ホーム</span>
+    </button>
+    <button class="tab-item" data-view="list">
+      <span class="tab-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="5" width="16" height="2" rx="1" fill="currentColor"/>
+          <rect x="4" y="11" width="16" height="2" rx="1" fill="currentColor"/>
+          <rect x="4" y="17" width="10" height="2" rx="1" fill="currentColor"/>
+          <circle cx="20" cy="18" r="3.5" fill="currentColor"/>
+          <path d="M18.5 18L19.5 19L21.5 17" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="tab-label">登録</span>
+    </button>
+    <button class="tab-item" data-view="gallery">
+      <span class="tab-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8" fill="none"/>
+          <circle cx="8.5" cy="11" r="1.5" fill="currentColor"/>
+          <path d="M3 17L8 12L11 15L15 10L21 17" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+          <path d="M8 6V4M12 6V3M16 6V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <span class="tab-label">一覧</span>
+    </button>
+    <button class="tab-item" data-view="shop">
+      <span class="tab-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C8.686 2 6 4.686 6 8C6 12.5 12 21 12 21C12 21 18 12.5 18 8C18 4.686 15.314 2 12 2Z" stroke="currentColor" stroke-width="1.8" fill="none"/>
+          <circle cx="12" cy="8" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none"/>
+        </svg>
+      </span>
+      <span class="tab-label">販売店</span>
+    </button>
+    <button class="tab-item" data-view="other">
+      <span class="tab-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none"/>
+          <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+          <rect x="11" y="11" width="2" height="6" rx="1" fill="currentColor"/>
+        </svg>
+      </span>
+      <span class="tab-label">その他</span>
+    </button>
+  </nav>
+
+  <!-- ===== モーダル ===== -->
+  <div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-header">
+        <div class="modal-route-num" id="modal-route-num">国道1号</div>
+        <div class="modal-route-info">
+          <div class="modal-route-region" id="modal-route-region"></div>
+          <div class="modal-route-path">
+            起点：<span id="modal-route-from"></span>　終点：<span id="modal-route-to"></span>
+          </div>
+        </div>
+        <button id="modal-close" aria-label="閉じる">✕</button>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">取得状況</div>
+        <button class="collect-toggle" id="collect-toggle-btn">○ 取得済みにする</button>
+        <div id="modal-date-row" class="modal-date-row" style="display:none">
+          <label for="modal-date-input">📅 取得日</label>
+          <input type="date" id="modal-date-input" />
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">取得場所</div>
+        <div class="modal-field">
+          <label for="modal-location-input">施設名・場所</label>
+          <div class="location-row">
+            <input type="text" id="modal-location-input" placeholder="例：道の駅〇〇、△△SA" />
+            <button id="btn-geocode" title="施設名から緯度経度を検索">🔍</button>
+          </div>
+          <div id="geocode-candidates" class="geocode-candidates" style="display:none"></div>
+        </div>
+        <div class="modal-field">
+          <label>緯度・経度</label>
+          <div class="coords-row">
+            <input type="number" id="modal-lat-input" placeholder="緯度 (35.68…)" step="0.000001" />
+            <input type="number" id="modal-lng-input" placeholder="経度 (139.76…)" step="0.000001" />
+          </div>
+          <div class="coords-actions">
+            <button id="btn-map-picker" class="btn-map-picker">🗺 地図で場所を指定</button>
+            <a id="modal-map-link" href="#" target="_blank" rel="noopener">🗺 地図で確認</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">写真</div>
+        <div class="photo-grid" id="photo-grid"></div>
+        <div class="photo-add-btns">
+          <label class="photo-add-btn" for="photo-input">
+            📷 写真を追加
+            <input type="file" id="photo-input" accept="image/*" multiple style="display:none" />
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-label">メモ</div>
+        <div class="modal-field">
+          <textarea id="modal-memo-input" placeholder="自由にメモを入力…"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-section modal-submit-section">
+        <button id="btn-modal-submit" class="btn-modal-submit">✓ 登録</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 国道詳細シート -->
+  <div id="detail-overlay" class="detail-overlay" role="dialog" aria-modal="true">
+    <div class="detail-sheet">
+      <div class="modal-handle"></div>
+
+      <!-- ヘッダー -->
+      <div class="detail-header">
+        <div class="detail-hero">
+          <div class="detail-route-badge" id="detail-route-badge">1</div>
+          <div class="detail-route-titles">
+            <div class="detail-route-num" id="detail-route-num">国道1号</div>
+            <div class="detail-route-type" id="detail-route-type"></div>
+          </div>
+        </div>
+        <button id="detail-close" class="detail-close-btn" aria-label="閉じる">✕</button>
+      </div>
+
+      <!-- 路線情報 -->
+      <div class="detail-info-grid">
+        <div class="detail-info-cell full-width">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.49-2.01-4.5-4.5-4.5zm0 6.25A1.75 1.75 0 1 1 8 4a1.75 1.75 0 0 1 0 3.75z" fill="currentColor"/></svg> 起点</div>
+          <div class="detail-info-value" id="detail-from">—</div>
+        </div>
+        <div class="detail-info-cell full-width">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M3 2v12h1.5V9.5H12l-2-2.5 2-2.5H4.5V2H3z" fill="currentColor"/></svg> 終点</div>
+          <div class="detail-info-value" id="detail-to">—</div>
+        </div>
+        <div class="detail-info-cell">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M2 3l4 1.5 4-1.5 4 1.5v9l-4-1.5-4 1.5-4-1.5V3z" fill="currentColor" opacity=".85"/></svg> 地域</div>
+          <div class="detail-info-value" id="detail-region">—</div>
+        </div>
+        <div class="detail-info-cell">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="6" width="14" height="4" rx="1" fill="currentColor" opacity=".85"/><path d="M4 6V4.5M8 6V4M12 6V4.5" stroke="#fff" stroke-width="1.2"/></svg> 延長</div>
+          <div class="detail-info-value loading" id="detail-length">—</div>
+        </div>
+      </div>
+
+      <!-- Wikipedia 概要 -->
+      <div class="detail-wiki-section" id="detail-wiki-section" style="display:none">
+        <div class="detail-section-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9H3V2z" fill="currentColor" opacity=".85"/><path d="M10 2v3h3" stroke="#fff" stroke-width="1"/><path d="M5.5 7h5M5.5 9.5h5M5.5 12h3" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg> 概要</div>
+        <div class="detail-wiki-text" id="detail-wiki-text"></div>
+        <a class="detail-wiki-link" id="detail-wiki-link" href="#" target="_blank" rel="noopener">Wikipedia で詳しく見る →</a>
+      </div>
+
+      <!-- 取得状況 -->
+      <div class="detail-status-section">
+        <div class="detail-section-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M2 2h6l6 6-6 6-6-6V2z" fill="currentColor" opacity=".85"/><circle cx="5" cy="5" r="1.2" fill="#fff"/></svg> 取得状況</div>
+        <div class="detail-status-row">
+          <div class="detail-status-badge" id="detail-status-badge">未取得</div>
+          <div class="detail-status-meta" id="detail-status-meta"></div>
+        </div>
+      </div>
+
+      <!-- アクションボタン -->
+      <div class="detail-actions">
+        <button class="detail-action-btn detail-action-edit" id="detail-edit-btn">✏️ 取得情報を編集</button>
+        <button class="detail-action-btn detail-action-toggle" id="detail-toggle-btn">○ 取得済みにする</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== 一覧用詳細シート（表示専用） ===== -->
+  <div id="gallery-detail-overlay" class="detail-overlay" role="dialog" aria-modal="true">
+    <div class="detail-sheet">
+      <div class="modal-handle"></div>
+
+      <!-- ヘッダー -->
+      <div class="detail-header">
+        <div class="detail-hero">
+          <div class="detail-route-badge" id="gd-route-badge">1</div>
+          <div class="detail-route-titles">
+            <div class="detail-route-num" id="gd-route-num">国道1号</div>
+            <div class="detail-route-type" id="gd-route-type"></div>
+          </div>
+        </div>
+        <button id="gd-close" class="detail-close-btn" aria-label="閉じる">✕</button>
+      </div>
+
+      <!-- 路線情報 -->
+      <div class="detail-info-grid">
+        <div class="detail-info-cell full-width">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.49-2.01-4.5-4.5-4.5zm0 6.25A1.75 1.75 0 1 1 8 4a1.75 1.75 0 0 1 0 3.75z" fill="currentColor"/></svg> 起点</div>
+          <div class="detail-info-value" id="gd-from">—</div>
+        </div>
+        <div class="detail-info-cell full-width">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M3 2v12h1.5V9.5H12l-2-2.5 2-2.5H4.5V2H3z" fill="currentColor"/></svg> 終点</div>
+          <div class="detail-info-value" id="gd-to">—</div>
+        </div>
+        <div class="detail-info-cell">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M2 3l4 1.5 4-1.5 4 1.5v9l-4-1.5-4 1.5-4-1.5V3z" fill="currentColor" opacity=".85"/></svg> 地域</div>
+          <div class="detail-info-value" id="gd-region">—</div>
+        </div>
+        <div class="detail-info-cell">
+          <div class="detail-info-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="6" width="14" height="4" rx="1" fill="currentColor" opacity=".85"/><path d="M4 6V4.5M8 6V4M12 6V4.5" stroke="#fff" stroke-width="1.2"/></svg> 延長</div>
+          <div class="detail-info-value loading" id="gd-length">—</div>
+        </div>
+      </div>
+
+      <!-- Wikipedia 概要 -->
+      <div class="detail-wiki-section" id="gd-wiki-section" style="display:none">
+        <div class="detail-section-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9H3V2z" fill="currentColor" opacity=".85"/><path d="M10 2v3h3" stroke="#fff" stroke-width="1"/><path d="M5.5 7h5M5.5 9.5h5M5.5 12h3" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg> 概要</div>
+        <div class="detail-wiki-text" id="gd-wiki-text"></div>
+        <a class="detail-wiki-link" id="gd-wiki-link" href="#" target="_blank" rel="noopener">Wikipedia で詳しく見る →</a>
+      </div>
+
+      <!-- 取得情報（日時・場所） -->
+      <div class="gd-collected-info" id="gd-collected-info" style="display:none"></div>
+
+
+      <!-- 写真 -->
+      <div class="gd-photos-section" id="gd-photos-section" style="display:none">
+        <div class="detail-section-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><rect x="1" y="4" width="14" height="10" rx="2" fill="currentColor" opacity=".85"/><circle cx="8" cy="9" r="2.5" stroke="#fff" stroke-width="1.2"/><path d="M5.5 4l1-2h3l1 2" fill="currentColor" opacity=".85"/></svg> 写真</div>
+        <div class="gd-photos-grid" id="gd-photos-grid"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 地図ピッカー -->
+  <div id="map-picker-overlay" class="map-picker-overlay" style="display:none">
+    <div class="map-picker-header">
+      <button id="map-picker-cancel" class="map-picker-btn-cancel">✕ キャンセル</button>
+      <div class="map-picker-title">🗺 場所をタップして指定</div>
+      <button id="map-picker-confirm" class="map-picker-btn-confirm" disabled>✔ ここに決定</button>
+    </div>
+    <div id="map-picker-container"></div>
+    <div class="map-picker-hint" id="map-picker-hint">地図をタップして場所を指定してください</div>
+  </div>
+
+  <!-- インポートモーダル -->
+  <div id="import-modal-overlay" class="import-modal-overlay" role="dialog" aria-modal="true">
+    <div class="import-modal">
+      <div class="import-modal-header">
+        <div class="import-modal-title">📥 インポート方式を選択</div>
+        <div class="import-modal-desc">インポートしたデータを既存の記録とどのように合わせますか？</div>
+      </div>
+      <div class="import-modal-options">
+        <button class="import-option-btn" id="import-btn-merge">
+          <span class="import-option-icon">🔀</span>
+          <div class="import-option-body">
+            <div class="import-option-title merge">マージ（追加・更新）</div>
+            <div class="import-option-note">既存の記録を残しつつ、インポートしたデータで補完・更新します。取得済み記録は消えません。</div>
+          </div>
+        </button>
+        <button class="import-option-btn" id="import-btn-overwrite">
+          <span class="import-option-icon">⚠️</span>
+          <div class="import-option-body">
+            <div class="import-option-title overwrite">上書き（完全置換）</div>
+            <div class="import-option-note">現在の記録をすべて削除し、インポートしたデータに完全に置き換えます。</div>
+          </div>
+        </button>
+      </div>
+      <button class="import-modal-cancel" id="import-btn-cancel">キャンセル</button>
+    </div>
+  </div>
+
+  <!-- アップデート通知バナー -->
+  <div id="update-banner" class="update-banner" style="display:none">
+    <span class="update-banner-text">🆕 新しいバージョンがあります</span>
+    <button class="update-banner-btn" id="update-banner-btn">今すぐ更新</button>
+  </div>
+
+  <!-- トースト -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="./lib/leaflet.js"></script>
+  <script src="./data/routes.js"></script>
+  <script src="./data/route-sign-hash.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
