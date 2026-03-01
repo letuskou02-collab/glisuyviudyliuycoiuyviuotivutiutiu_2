@@ -2,6 +2,70 @@
 
 // === 定数 ===
 const STORAGE_KEY = 'kokudo_sticker_data';
+const IDB_NAME = 'kokudo_photos';
+const IDB_STORE = 'photos';
+const IDB_VERSION = 1;
+
+// === IndexedDB 管理 ===
+let _idb = null;
+function openIDB() {
+  if (_idb) return Promise.resolve(_idb);
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        db.createObjectStore(IDB_STORE, { keyPath: 'routeId' });
+      }
+    };
+    req.onsuccess = (e) => { _idb = e.target.result; resolve(_idb); };
+    req.onerror = () => reject(req.error);
+  });
+}
+async function idbGetPhotos(routeId) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).get(routeId);
+      req.onsuccess = () => resolve(req.result ? req.result.photos : []);
+      req.onerror = () => resolve([]);
+    });
+  } catch { return []; }
+}
+async function idbSetPhotos(routeId, photos) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).put({ routeId, photos });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch (e) { console.error('idbSetPhotos error', e); }
+}
+async function idbDeletePhotos(routeId) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(routeId);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => resolve();
+    });
+  } catch { }
+}
+async function idbGetAllPhotos() {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const req = tx.objectStore(IDB_STORE).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch { return []; }
+}
 const REGIONS = ['北海道','東北','関東','中部','北陸','近畿','中国','四国','九州','沖縄'];
 
 // === 状態 ===
@@ -26,11 +90,44 @@ function loadData() {
     collectedData = raw ? JSON.parse(raw) : {};
   } catch (e) { collectedData = {}; }
 }
+
+// 既存localStorageのphotosデータをIndexedDBへ移行（初回のみ）
+async function migratePhotosToIDB() {
+  const MIGRATED_KEY = 'kokudo_photos_migrated';
+  if (localStorage.getItem(MIGRATED_KEY)) return;
+  let migrated = 0;
+  const tasks = Object.keys(collectedData).map(async id => {
+    const photos = collectedData[id].photos;
+    if (Array.isArray(photos) && photos.length > 0) {
+      await idbSetPhotos(Number(id), photos);
+      migrated++;
+    }
+  });
+  await Promise.all(tasks);
+  if (migrated > 0) {
+    showToast(`📦 写真${migrated}件をIndexedDBに移行しました`, 'success');
+  }
+  localStorage.setItem(MIGRATED_KEY, '1');
+  // localStorageからphotosを削除して保存し直す
+  saveData();
+}
 function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(collectedData));
+  // photosはIndexedDBで管理するためlocalStorageからは除外
+  const dataToSave = {};
+  Object.keys(collectedData).forEach(id => {
+    const { photos, ...rest } = collectedData[id];
+    dataToSave[id] = rest;
+  });
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+  } catch (e) {
+    console.error('saveData error', e);
+  }
 }
 function getRouteData(id) {
-  return collectedData[id] || { collected: false, memo: '', date: null, location: '', lat: null, lng: null, photos: [] };
+  // photosはIndexedDBで管理するため常に[]（表示時に別途取得）
+  const d = collectedData[id] || {};
+  return { collected: false, memo: '', date: null, location: '', lat: null, lng: null, ...d, photos: [] };
 }
 function setRouteData(id, patch) {
   collectedData[id] = { ...getRouteData(id), ...patch };
@@ -301,14 +398,13 @@ function buildGallery() {
     card.className = 'gallery-card';
 
     const signUrl = getRouteSignUrl(route.id);
-    const thumb = (d.photos && d.photos.length > 0)
-      ? `<div class="gallery-thumb"><img src="${d.photos[0]}" alt="国道${route.id}号" loading="lazy" /></div>`
-      : signUrl
-        ? `<div class="gallery-thumb sign-thumb"><img src="${signUrl}" alt="国道${route.id}号標識" /></div>`
-        : `<div class="gallery-thumb no-photo"><span>📸</span></div>`;
+    // サムネイルは先に標識画像またはプレースホルダーで表示
+    const thumbPlaceholder = signUrl
+      ? `<div class="gallery-thumb sign-thumb"><img src="${signUrl}" alt="国道${route.id}号標識" /></div>`
+      : `<div class="gallery-thumb no-photo"><span>📸</span></div>`;
 
     card.innerHTML = `
-      ${thumb}
+      <div class="gallery-thumb-wrap" data-route-id="${route.id}">${thumbPlaceholder}</div>
       <div class="gallery-info">
         <div class="gallery-num">${route.id}号</div>
         <div class="gallery-region">${route.region}</div>
@@ -318,6 +414,14 @@ function buildGallery() {
     `;
     card.addEventListener('click', () => openGalleryDetail(route.id));
     container.appendChild(card);
+
+    // 写真をIndexedDBから非同期ロードしてサムネイルを差し替え
+    idbGetPhotos(route.id).then(photos => {
+      if (photos && photos.length > 0) {
+        const wrap = card.querySelector('.gallery-thumb-wrap');
+        if (wrap) wrap.innerHTML = `<div class="gallery-thumb"><img src="${photos[0]}" alt="国道${route.id}号" loading="lazy" /></div>`;
+      }
+    });
   });
 }
 
@@ -543,33 +647,35 @@ function openGalleryDetail(id) {
     collectedInfoEl.style.display = rows.length ? 'block' : 'none';
   }
 
-  // 写真
+  // 写真: IndexedDBから非同期ロード
   const photosSec = document.getElementById('gd-photos-section');
   const photosGrid = document.getElementById('gd-photos-grid');
   photosGrid.innerHTML = '';
-  if (d.photos && d.photos.length > 0) {
-    d.photos.forEach(src => {
-      const img = document.createElement('img');
-      img.src = src;
-      img.className = 'gd-photo-thumb';
-      img.alt = `国道${id}号の写真`;
-      img.loading = 'lazy';
-      img.addEventListener('click', () => {
-        const ov = document.createElement('div');
-        ov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;';
-        const full = document.createElement('img');
-        full.src = src;
-        full.style.cssText = 'max-width:95vw;max-height:90dvh;border-radius:8px;object-fit:contain;';
-        ov.appendChild(full);
-        ov.addEventListener('click', () => document.body.removeChild(ov));
-        document.body.appendChild(ov);
+  photosSec.style.display = 'none';
+  idbGetPhotos(id).then(photos => {
+    if (photos && photos.length > 0) {
+      photosGrid.innerHTML = '';
+      photos.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'gd-photo-thumb';
+        img.alt = `国道${id}号の写真`;
+        img.loading = 'lazy';
+        img.addEventListener('click', () => {
+          const ov = document.createElement('div');
+          ov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;';
+          const full = document.createElement('img');
+          full.src = src;
+          full.style.cssText = 'max-width:95vw;max-height:90dvh;border-radius:8px;object-fit:contain;';
+          ov.appendChild(full);
+          ov.addEventListener('click', () => document.body.removeChild(ov));
+          document.body.appendChild(ov);
+        });
+        photosGrid.appendChild(img);
       });
-      photosGrid.appendChild(img);
-    });
-    photosSec.style.display = 'block';
-  } else {
-    photosSec.style.display = 'none';
-  }
+      photosSec.style.display = 'block';
+    }
+  });
 
   document.getElementById('gallery-detail-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
@@ -683,8 +789,13 @@ function openModal(id) {
   document.getElementById('modal-lat-input').value = (d.lat != null) ? d.lat : '';
   document.getElementById('modal-lng-input').value = (d.lng != null) ? d.lng : '';
   updateMapLink(d.lat, d.lng);
-  currentPhotos = Array.isArray(d.photos) ? [...d.photos] : [];
+  // IndexedDBから写真を非同期ロード
+  currentPhotos = [];
   renderPhotoGrid();
+  idbGetPhotos(id).then(photos => {
+    currentPhotos = Array.isArray(photos) ? [...photos] : [];
+    renderPhotoGrid();
+  });
 
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
@@ -695,8 +806,6 @@ function openModal(id) {
 }
 
 function closeModal(save = true) {
-  document.title = 'closeModal:id=' + activeModalId + ' save=' + save;
-  try {
   if (activeModalId !== null && save) {
     const memo = document.getElementById('modal-memo-input').value;
     const location = document.getElementById('modal-location-input').value.trim();
@@ -705,32 +814,28 @@ function closeModal(save = true) {
     const lat = latVal !== '' ? parseFloat(latVal) : null;
     const lng = lngVal !== '' ? parseFloat(lngVal) : null;
     const d = getRouteData(activeModalId);
-    // 日付：取得済みの場合のみ入力値を保存（空なら既存値を維持）
     if (d.collected) {
       const dateVal = document.getElementById('modal-date-input').value || d.date || null;
       setRouteData(activeModalId, { date: dateVal });
     }
-    setRouteData(activeModalId, { memo, location, lat, lng, photos: currentPhotos });
-    renderAll();
-    // 一覧詳細シートが開いていれば最新データで再描画
-    if (activeGalleryDetailId !== null) {
-      openGalleryDetail(activeGalleryDetailId);
-    }
+    setRouteData(activeModalId, { memo, location, lat, lng });
+    // 写真はIndexedDBに保存（localStorage容量を使わない）
+    idbSetPhotos(activeModalId, currentPhotos).then(() => {
+      renderAll();
+      if (activeGalleryDetailId !== null) {
+        openGalleryDetail(activeGalleryDetailId);
+      }
+    });
   }
   document.getElementById('modal-overlay').classList.remove('open');
   activeModalId = null;
   document.getElementById('app-body').classList.remove('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = '';
   _unlockBgScroll();
-  // detail-edit-btnから来た場合は詳細シートを再表示
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
     _reopenDetailId = null;
     setTimeout(() => openDetail(_rid), 50);
-  }
-  } catch(err) {
-    alert('ERR: ' + err.message);
-    document.title = 'ERR: ' + err.message;
   }
 }
 
@@ -793,8 +898,12 @@ function applyImportMerge() {
     const cur = collectedData[id];
     const inc = incoming[id];
     if (!cur) {
-      // 既存にない → そのまま追加
-      collectedData[id] = inc;
+      // 既存にない → そのまま追加（photosはIndexedDB管理）
+      const { photos: incPhotos, ...incRest } = inc;
+      collectedData[id] = incRest;
+      if (incPhotos && incPhotos.length > 0) {
+        idbSetPhotos(Number(id), incPhotos);
+      }
       if (inc.collected) added++;
     } else {
       // 既存あり → フィールドごとにマージ
@@ -809,15 +918,6 @@ function applyImportMerge() {
       if (!cur.location && inc.location) merged.location = inc.location;
       // lat/lng: 既存が未設定なら incoming を採用
       if ((cur.lat == null) && inc.lat != null) { merged.lat = inc.lat; merged.lng = inc.lng; }
-      // photos: 既存に未登録のものを追加
-      if (inc.photos && inc.photos.length > 0) {
-        const existingUrls = new Set((cur.photos || []).map(p => typeof p === 'string' ? p : p.url));
-        const newPhotos = inc.photos.filter(p => {
-          const url = typeof p === 'string' ? p : p.url;
-          return !existingUrls.has(url);
-        });
-        if (newPhotos.length > 0) merged.photos = [...(cur.photos || []), ...newPhotos];
-      }
       collectedData[id] = merged;
     }
   }
@@ -1028,7 +1128,12 @@ function updateMapLink(lat, lng) {
 
 // === 写真 ===
 function addPhotos(files) {
-  const MAX = 800, QUALITY = 0.72;
+  const MAX = 500, QUALITY = 0.55;
+  const MAX_PHOTOS = 10;
+  if (currentPhotos.length >= MAX_PHOTOS) {
+    showToast(`写真は最大${MAX_PHOTOS}枚までです`, 'default');
+    return;
+  }
   Array.from(files).forEach(file => {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -1260,9 +1365,7 @@ function initHomeMap() {
         : `<div style="background:#0055c8;color:white;font-size:10px;font-weight:700;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${id}</div>`,
       iconSize: [36, 36], iconAnchor: [18, 18]
     });
-    const photoHtml = (d.photos && d.photos.length > 0)
-      ? `<img src="${d.photos[0]}" style="width:100%;max-width:200px;border-radius:6px;margin-top:6px;display:block;" />`
-      : '';
+    const photoHtml = ''; // 写真はIndexedDB管理のため地図ポップアップでは非表示
     const marker = L.marker([lat, lng], { icon }).addTo(mapInstance._markerLayer);
     marker.bindPopup(
       `<b>国道${id}号</b><br>` +
@@ -1530,6 +1633,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
   setupEvents();
   renderAll();
+  migratePhotosToIDB(); // 既存写真データをIndexedDBへ移行（初回のみ）
 
   // メニューカードの遷移イベント
   document.querySelectorAll('.menu-card').forEach(btn => {
