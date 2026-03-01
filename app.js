@@ -335,37 +335,38 @@ function renderAll() {
 let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
-// モーダル表示中の背景スクロール防止（カウント管理）
-// iOS Safari: app-bodyのスクロール位置をリセットして fixed要素の座標ずれを防ぐ
+// モーダル表示中の背景スクロール防止
+// iOS Safari対応: window.scrollYを保存してbody overflow:hidden + height:100%でロック
 let _lockCount = 0;
-let _savedAppBodyScrollTop = 0;
+let _savedScrollY = 0;
 function _lockBgScroll() {
   if (_lockCount === 0) {
-    const appBody = document.getElementById('app-body');
-    if (appBody) {
-      _savedAppBodyScrollTop = appBody.scrollTop;
-      appBody.scrollTop = 0;
-      appBody.style.overflow = 'hidden';
-    }
+    _savedScrollY = window.scrollY;
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100%';
+    document.documentElement.style.overflow = 'hidden';
+    document.documentElement.style.height = '100%';
   }
   _lockCount++;
 }
 function _unlockBgScroll() {
   _lockCount = Math.max(0, _lockCount - 1);
   if (_lockCount === 0) {
-    const appBody = document.getElementById('app-body');
-    if (appBody) {
-      appBody.style.overflow = '';
-      appBody.scrollTop = _savedAppBodyScrollTop;
-    }
+    document.body.style.overflow = '';
+    document.body.style.height = '';
+    document.documentElement.style.overflow = '';
+    document.documentElement.style.height = '';
+    window.scrollTo(0, _savedScrollY);
   }
 }
 function _forceUnlockIfAllClosed() {
-  _lockCount = 0;
-  const appBody = document.getElementById('app-body');
-  if (appBody) {
-    appBody.style.overflow = '';
-    appBody.scrollTop = _savedAppBodyScrollTop;
+  if (_lockCount > 0) {
+    _lockCount = 0;
+    document.body.style.overflow = '';
+    document.body.style.height = '';
+    document.documentElement.style.overflow = '';
+    document.documentElement.style.height = '';
+    window.scrollTo(0, _savedScrollY);
   }
 }
 
@@ -688,6 +689,8 @@ function openModal(id) {
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = 'none';
+  // iOS Safari: スクロール位置をリセットしてからロック（fixed要素のヒットテストずれ防止）
+  window.scrollTo(0, 0);
   _lockBgScroll();
 }
 
