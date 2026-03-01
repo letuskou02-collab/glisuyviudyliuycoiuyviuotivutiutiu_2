@@ -704,6 +704,10 @@ function closeModal(save = true) {
     if (d.collected) setRouteData(activeModalId, { date: dateVal });
     setRouteData(activeModalId, { memo, location, lat, lng, photos: currentPhotos });
     renderAll();
+    // 一覧詳細シートが開いていれば最新データで再描画
+    if (activeGalleryDetailId !== null) {
+      openGalleryDetail(activeGalleryDetailId);
+    }
   }
   document.getElementById('modal-overlay').classList.remove('open');
   activeModalId = null;
@@ -1324,6 +1328,21 @@ function setupEvents() {
     const id = activeDetailId;
     closeDetail();
     openModal(id);
+    // 登録ボタンを押してモーダルを閉じたら詳細シートを再表示・内容更新
+    const _origCloseModal = document.getElementById('btn-modal-submit');
+    const _origCancel = document.getElementById('modal-close');
+    const _reopenDetail = (save) => {
+      _origCloseModal.removeEventListener('click', _onSubmit);
+      _origCancel.removeEventListener('click', _onCancel);
+      if (save) {
+        // データ保存後に詳細シートを最新状態で再表示
+        setTimeout(() => openDetail(id), 50);
+      }
+    };
+    const _onSubmit = () => _reopenDetail(true);
+    const _onCancel = () => _reopenDetail(false);
+    _origCloseModal.addEventListener('click', _onSubmit, { once: true });
+    _origCancel.addEventListener('click', _onCancel, { once: true });
   });
   document.getElementById('detail-toggle-btn').addEventListener('click', () => {
     if (activeDetailId === null) return;
