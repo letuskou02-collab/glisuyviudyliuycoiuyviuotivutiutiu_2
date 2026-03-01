@@ -806,10 +806,9 @@ function closeModal(save = true) {
   }
   const _overlayEl = document.getElementById('modal-overlay');
   _overlayEl.classList.remove('open');
-  // visualViewport resize で設定されたインラインスタイルをリセット
-  _overlayEl.style.top = '';
-  _overlayEl.style.height = '';
-  _overlayEl.style.bottom = '';
+  // visualViewport resize で設定した sheet の maxHeight をリセット
+  const _sheetEl = _overlayEl.querySelector('.modal-sheet');
+  if (_sheetEl) _sheetEl.style.maxHeight = '';
   activeModalId = null;
   document.querySelector('.bottom-tab-bar').style.display = '';
   if (_reopenDetailId !== null) {
@@ -1537,20 +1536,18 @@ function setupEvents() {
     if (e.key === 'Escape' && activeModalId !== null) closeModal(true);
   });
 
-  // iOS Safari: visualViewport resize でモーダルシートを再配置
+  // iOS Safari: キーボード表示時にmodal-sheetの高さをviewportに合わせる
   if (window.visualViewport) {
     const _onVpResize = () => {
       const overlay = document.getElementById('modal-overlay');
       if (!overlay || !overlay.classList.contains('open')) return;
-      const vvh = window.visualViewport.height;
-      const offsetTop = window.visualViewport.offsetTop;
-      overlay.style.top = offsetTop + 'px';
-      overlay.style.height = vvh + 'px';
-      overlay.style.bottom = 'auto';
+      const sheet = overlay.querySelector('.modal-sheet');
+      if (!sheet) return;
+      // キーボードが出た後のvisible高さの92%をmax-heightに設定
+      sheet.style.maxHeight = (window.visualViewport.height * 0.92) + 'px';
     };
     window.visualViewport.addEventListener('resize', _onVpResize);
-    window.visualViewport.addEventListener('scroll', _onVpResize);
-    // リセットは closeModal 内で行うためここでは不要
+    // リセットは closeModal 内で行う
   }
 }
 
