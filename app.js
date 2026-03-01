@@ -695,6 +695,8 @@ function openModal(id) {
 }
 
 function closeModal(save = true) {
+  document.title = 'closeModal:id=' + activeModalId + ' save=' + save;
+  try {
   if (activeModalId !== null && save) {
     const memo = document.getElementById('modal-memo-input').value;
     const location = document.getElementById('modal-location-input').value.trim();
@@ -725,6 +727,10 @@ function closeModal(save = true) {
     const _rid = _reopenDetailId;
     _reopenDetailId = null;
     setTimeout(() => openDetail(_rid), 50);
+  }
+  } catch(err) {
+    alert('ERR: ' + err.message);
+    document.title = 'ERR: ' + err.message;
   }
 }
 
