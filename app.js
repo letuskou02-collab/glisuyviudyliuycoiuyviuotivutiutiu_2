@@ -806,9 +806,6 @@ function closeModal(save = true) {
   }
   const _overlayEl = document.getElementById('modal-overlay');
   _overlayEl.classList.remove('open');
-  // visualViewport resize で設定した sheet の maxHeight をリセット
-  const _sheetEl = _overlayEl.querySelector('.modal-sheet');
-  if (_sheetEl) _sheetEl.style.maxHeight = '';
   activeModalId = null;
   document.querySelector('.bottom-tab-bar').style.display = '';
   if (_reopenDetailId !== null) {
@@ -1536,24 +1533,6 @@ function setupEvents() {
     if (e.key === 'Escape' && activeModalId !== null) closeModal(true);
   });
 
-  // iOS Safari: キーボード表示時にmodal-sheetの高さをviewportに合わせる
-  if (window.visualViewport) {
-    const _onVpResize = () => {
-      const overlay = document.getElementById('modal-overlay');
-      if (!overlay || !overlay.classList.contains('open')) return;
-      const sheet = overlay.querySelector('.modal-sheet');
-      if (!sheet) return;
-      // visualViewport.height はキーボードを除いた可視領域の高さ → そのままmax-heightに使う
-      sheet.style.maxHeight = (window.visualViewport.height * 0.98) + 'px';
-      // フォーカス中の入力欄をシート内でスクロールして見えるようにする
-      const focused = document.activeElement;
-      if (focused && sheet.contains(focused)) {
-        setTimeout(() => focused.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
-      }
-    };
-    window.visualViewport.addEventListener('resize', _onVpResize);
-    // リセットは closeModal 内で行う
-  }
 }
 
 // === Service Worker ===
