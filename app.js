@@ -700,9 +700,12 @@ function closeModal(save = true) {
     const lngVal = document.getElementById('modal-lng-input').value;
     const lat = latVal !== '' ? parseFloat(latVal) : null;
     const lng = lngVal !== '' ? parseFloat(lngVal) : null;
-    const dateVal = document.getElementById('modal-date-input').value || null;
     const d = getRouteData(activeModalId);
-    if (d.collected) setRouteData(activeModalId, { date: dateVal });
+    // 日付：取得済みの場合のみ入力値を保存（空なら既存値を維持）
+    if (d.collected) {
+      const dateVal = document.getElementById('modal-date-input').value || d.date || null;
+      setRouteData(activeModalId, { date: dateVal });
+    }
     setRouteData(activeModalId, { memo, location, lat, lng, photos: currentPhotos });
     renderAll();
     // 一覧詳細シートが開いていれば最新データで再描画
