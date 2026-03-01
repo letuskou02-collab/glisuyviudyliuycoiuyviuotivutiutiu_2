@@ -1545,6 +1545,11 @@ function setupEvents() {
       if (!sheet) return;
       // キーボードが出た後のvisible高さの92%をmax-heightに設定
       sheet.style.maxHeight = (window.visualViewport.height * 0.92) + 'px';
+      // フォーカス中の入力欄をシート内でスクロールして見えるようにする
+      const focused = document.activeElement;
+      if (focused && sheet.contains(focused)) {
+        setTimeout(() => focused.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+      }
     };
     window.visualViewport.addEventListener('resize', _onVpResize);
     // リセットは closeModal 内で行う
