@@ -906,7 +906,7 @@ input, select, textarea { font-family: inherit; }
 .map-picker-overlay {
   position: fixed;
   inset: 0;
-  z-index: 2000;
+  z-index: 20000;
   display: flex;
   flex-direction: column;
   background: #000;
