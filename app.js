@@ -1543,12 +1543,12 @@ function setupEvents() {
       if (!overlay || !overlay.classList.contains('open')) return;
       const sheet = overlay.querySelector('.modal-sheet');
       if (!sheet) return;
-      // キーボードが出た後のvisible高さの92%をmax-heightに設定
-      sheet.style.maxHeight = (window.visualViewport.height * 0.92) + 'px';
+      // visualViewport.height はキーボードを除いた可視領域の高さ → そのままmax-heightに使う
+      sheet.style.maxHeight = (window.visualViewport.height * 0.98) + 'px';
       // フォーカス中の入力欄をシート内でスクロールして見えるようにする
       const focused = document.activeElement;
       if (focused && sheet.contains(focused)) {
-        setTimeout(() => focused.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        setTimeout(() => focused.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
       }
     };
     window.visualViewport.addEventListener('resize', _onVpResize);
