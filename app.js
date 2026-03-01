@@ -1071,6 +1071,11 @@ function renderPhotoGrid() {
     wrap.appendChild(img); wrap.appendChild(rm);
     grid.appendChild(wrap);
   });
+  // 写真追加後にモーダルシートを最下部へスクロール
+  setTimeout(() => {
+    const sheet = document.querySelector('.modal-sheet');
+    if (sheet) sheet.scrollTop = sheet.scrollHeight;
+  }, 100);
 }
 
 // === ビュー切替 ===
@@ -1409,6 +1414,28 @@ function setupEvents() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && activeModalId !== null) closeModal(true);
   });
+
+  // iOS Safari: visualViewport resize でモーダルシートを再配置
+  if (window.visualViewport) {
+    const _onVpResize = () => {
+      const overlay = document.getElementById('modal-overlay');
+      if (!overlay || !overlay.classList.contains('open')) return;
+      const vvh = window.visualViewport.height;
+      const offsetTop = window.visualViewport.offsetTop;
+      overlay.style.top = offsetTop + 'px';
+      overlay.style.height = vvh + 'px';
+      overlay.style.bottom = 'auto';
+    };
+    window.visualViewport.addEventListener('resize', _onVpResize);
+    window.visualViewport.addEventListener('scroll', _onVpResize);
+    // モーダルが閉じたらリセット
+    document.getElementById('modal-close').addEventListener('click', () => {
+      const overlay = document.getElementById('modal-overlay');
+      overlay.style.top = '';
+      overlay.style.height = '';
+      overlay.style.bottom = '';
+    });
+  }
 }
 
 // === Service Worker ===
