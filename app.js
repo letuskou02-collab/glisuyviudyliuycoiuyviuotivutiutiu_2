@@ -770,6 +770,7 @@ function openModal(id) {
   document.getElementById('modal-lat-input').value = (d.lat != null) ? d.lat : '';
   document.getElementById('modal-lng-input').value = (d.lng != null) ? d.lng : '';
   updateMapLink(d.lat, d.lng);
+  hideCandidates(); // 前回の検索候補をクリア
   // IndexedDBから写真を非同期ロード
   currentPhotos = [];
   renderPhotoGrid();
@@ -990,23 +991,29 @@ async function geocodeLocation() {
 async function fetchCandidates(query) {
   const results = [];
 
-  // --- 1. 国土地理院 地名検索API ---
-  try {
-    const gsiUrl = 'https://msearch.gsi.go.jp/address-search/AddressSearch?q=' + encodeURIComponent(query);
-    const gsiRes = await fetch(gsiUrl);
-    if (gsiRes.ok) {
-      const gsiData = await gsiRes.json();
-      gsiData.slice(0, 3).forEach(item => {
-        const coords = item.geometry?.coordinates;
-        if (coords) results.push({
-          label: item.properties?.title || query,
-          lat: Math.round(parseFloat(coords[1]) * 1000000) / 1000000,
-          lng: Math.round(parseFloat(coords[0]) * 1000000) / 1000000,
-          source: '地理院'
+  // --- 1. 国土地理院 地名検索API（住所・地名専用。施設名クエリはスキップ）---
+  const _facilityWords = ['道の駅', 'SA', 'サービスエリア', 'IC', 'インターチェンジ',
+    'パーキング', '店', 'ホテル', 'マート', 'セブン', 'ローソン', 'ファミリー',
+    'エネオス', 'ENEOS', '出光', 'コスモ', 'ドライブイン'];
+  const _isAddressQuery = !_facilityWords.some(w => query.includes(w));
+  if (_isAddressQuery) {
+    try {
+      const gsiUrl = 'https://msearch.gsi.go.jp/address-search/AddressSearch?q=' + encodeURIComponent(query);
+      const gsiRes = await fetch(gsiUrl);
+      if (gsiRes.ok) {
+        const gsiData = await gsiRes.json();
+        gsiData.slice(0, 3).forEach(item => {
+          const coords = item.geometry?.coordinates;
+          if (coords) results.push({
+            label: item.properties?.title || query,
+            lat: Math.round(parseFloat(coords[1]) * 1000000) / 1000000,
+            lng: Math.round(parseFloat(coords[0]) * 1000000) / 1000000,
+            source: '地理院'
+          });
         });
-      });
-    }
-  } catch {}
+      }
+    } catch {}
+  }
 
   // --- 2. Nominatim（日本限定・複数バリアント） ---
   // コンビニ・飲食・ガソリンスタンドなどのチェーン店キーワード
