@@ -336,15 +336,37 @@ let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
 // モーダル表示中の背景スクロール防止（カウント管理）
+// iOS Safari: app-bodyのスクロール位置をリセットして fixed要素の座標ずれを防ぐ
 let _lockCount = 0;
+let _savedAppBodyScrollTop = 0;
 function _lockBgScroll() {
+  if (_lockCount === 0) {
+    const appBody = document.getElementById('app-body');
+    if (appBody) {
+      _savedAppBodyScrollTop = appBody.scrollTop;
+      appBody.scrollTop = 0;
+      appBody.style.overflow = 'hidden';
+    }
+  }
   _lockCount++;
 }
 function _unlockBgScroll() {
   _lockCount = Math.max(0, _lockCount - 1);
+  if (_lockCount === 0) {
+    const appBody = document.getElementById('app-body');
+    if (appBody) {
+      appBody.style.overflow = '';
+      appBody.scrollTop = _savedAppBodyScrollTop;
+    }
+  }
 }
 function _forceUnlockIfAllClosed() {
   _lockCount = 0;
+  const appBody = document.getElementById('app-body');
+  if (appBody) {
+    appBody.style.overflow = '';
+    appBody.scrollTop = _savedAppBodyScrollTop;
+  }
 }
 
 function openDetail(id) {
@@ -1309,15 +1331,6 @@ function setupEvents() {
     e.preventDefault();
     closeModal(true);
   }, { passive: false });
-  // デバッグ: タップ座標の最前面要素を表示
-  document.addEventListener('touchend', (e) => {
-    const t = e.changedTouches[0];
-    const el = document.elementFromPoint(t.clientX, t.clientY);
-    if (el) {
-      const info = `tag:${el.tagName} id:${el.id||'-'} class:${el.className||'-'}`;
-      document.title = info;
-    }
-  }, { passive: true });
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
   });
