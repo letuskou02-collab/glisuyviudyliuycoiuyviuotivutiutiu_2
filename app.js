@@ -14,6 +14,7 @@ let gallerySortOrder = 'date-desc';
 let searchQuery = '';
 let isListView = false;
 let activeModalId = null;
+let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 let currentPhotos = [];
 let tapTimers = {};
 let currentView = 'home';
@@ -714,6 +715,12 @@ function closeModal(save = true) {
   document.getElementById('app-body').classList.remove('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = '';
   _unlockBgScroll();
+  // detail-edit-btnから来た場合は詳細シートを再表示
+  if (_reopenDetailId !== null) {
+    const _rid = _reopenDetailId;
+    _reopenDetailId = null;
+    setTimeout(() => openDetail(_rid), 50);
+  }
 }
 
 // === エクスポート / インポート / リセット ===
@@ -1308,7 +1315,7 @@ function setupEvents() {
   });
 
   // モーダル
-  document.getElementById('modal-close').addEventListener('click', () => closeModal(false));
+  document.getElementById('modal-close').addEventListener('click', () => { _reopenDetailId = null; closeModal(false); });
   document.getElementById('btn-modal-submit').addEventListener('click', () => closeModal(true));
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
@@ -1327,22 +1334,8 @@ function setupEvents() {
   document.getElementById('detail-edit-btn').addEventListener('click', () => {
     const id = activeDetailId;
     closeDetail();
+    _reopenDetailId = id; // 登録後に詳細シートを再表示するフラグ
     openModal(id);
-    // 登録ボタンを押してモーダルを閉じたら詳細シートを再表示・内容更新
-    const _origCloseModal = document.getElementById('btn-modal-submit');
-    const _origCancel = document.getElementById('modal-close');
-    const _reopenDetail = (save) => {
-      _origCloseModal.removeEventListener('click', _onSubmit);
-      _origCancel.removeEventListener('click', _onCancel);
-      if (save) {
-        // データ保存後に詳細シートを最新状態で再表示
-        setTimeout(() => openDetail(id), 50);
-      }
-    };
-    const _onSubmit = () => _reopenDetail(true);
-    const _onCancel = () => _reopenDetail(false);
-    _origCloseModal.addEventListener('click', _onSubmit, { once: true });
-    _origCancel.addEventListener('click', _onCancel, { once: true });
   });
   document.getElementById('detail-toggle-btn').addEventListener('click', () => {
     if (activeDetailId === null) return;
