@@ -692,8 +692,6 @@ input, select, textarea { font-family: inherit; }
   left: 0;
   right: 0;
   bottom: 0;
-  /* iOS Safari: キーボード表示時にoverlayが縮まないよう lvh で固定 */
-  min-height: 100lvh;
   background: rgba(0,0,0,0.55);
   z-index: 10000;
   display: none;
@@ -704,7 +702,8 @@ input, select, textarea { font-family: inherit; }
 .modal-sheet {
   width: 100%;
   max-width: 540px;
-  max-height: 92dvh;
+  /* svh: キーボード表示時の最小viewport基準でシートが収まるようにする */
+  max-height: 92svh;
   background: #f2f2f7;
   border-radius: 20px 20px 0 0;
   overflow-y: auto;
