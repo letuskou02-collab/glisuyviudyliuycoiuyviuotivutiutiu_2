@@ -121,53 +121,102 @@
       </section>
     </div>
 
-    <!-- ===== 登録（国道一覧） ===== -->
+    <!-- ===== 登録（クイック登録フォーム） ===== -->
     <div id="view-list" class="view-page" style="display:none">
-      <div class="page-header">
-        <h2><span class="page-header-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="5" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="11" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="17" width="10" height="2" rx="1" fill="currentColor"/><circle cx="20" cy="18" r="3.5" fill="currentColor"/><path d="M18.5 18L19.5 19L21.5 17" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 国道ステッカー登録</h2>
-      </div>
 
-      <div class="list-toolbar">
-        <div class="search-bar">
-          <span class="search-icon">🔍</span>
-          <input type="search" id="search-input" placeholder="号数・地方・区間で検索…" autocomplete="off" />
+      <!-- 登録フォーム -->
+      <div id="quick-register-form" class="quick-register-form">
+        <div class="page-header">
+          <h2><span class="page-header-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="4" y="5" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="11" width="16" height="2" rx="1" fill="currentColor"/><rect x="4" y="17" width="10" height="2" rx="1" fill="currentColor"/><circle cx="20" cy="18" r="3.5" fill="currentColor"/><path d="M18.5 18L19.5 19L21.5 17" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> 国道ステッカー登録</h2>
         </div>
-        <div class="filter-tabs">
-          <button class="tab-btn active" data-filter="all">すべて</button>
-          <button class="tab-btn" data-filter="collected">取得済み</button>
-          <button class="tab-btn" data-filter="not-collected">未取得</button>
+
+        <!-- 国道番号入力 -->
+        <div class="qr-route-input-section">
+          <div class="qr-num-row">
+            <span class="qr-label">国道</span>
+            <input type="number" id="qr-route-num-input" class="qr-route-num-input" placeholder="1" min="1" max="507" inputmode="numeric" />
+            <span class="qr-label">号</span>
+          </div>
+          <!-- 国道情報プレビュー -->
+          <div id="qr-route-preview" class="qr-route-preview" style="display:none">
+            <div class="qr-preview-badge" id="qr-preview-badge"></div>
+            <div class="qr-preview-info">
+              <div class="qr-preview-num" id="qr-preview-num"></div>
+              <div class="qr-preview-sub" id="qr-preview-sub"></div>
+              <div class="qr-preview-path" id="qr-preview-path"></div>
+            </div>
+          </div>
+          <div id="qr-route-error" class="qr-route-error" style="display:none">該当する国道が見つかりません</div>
         </div>
-        <div class="select-row">
-          <select id="region-select">
-            <option value="">地方：すべて</option>
-            <option value="北海道">北海道</option>
-            <option value="東北">東北</option>
-            <option value="関東">関東</option>
-            <option value="中部">中部</option>
-            <option value="北陸">北陸</option>
-            <option value="近畿">近畿</option>
-            <option value="中国">中国</option>
-            <option value="四国">四国</option>
-            <option value="九州">九州</option>
-            <option value="沖縄">沖縄</option>
-          </select>
-          <select id="type-select">
-            <option value="">種別：すべて</option>
-            <option value="一桁">一桁国道</option>
-            <option value="二桁">二桁国道</option>
-            <option value="三桁">三桁国道</option>
-          </select>
-        </div>
-        <div class="toolbar-right">
-          <span id="section-count" class="section-count"></span>
-          <div class="view-toggle">
-            <button class="active" id="btn-grid-view" title="グリッド">⊞</button>
-            <button id="btn-list-view" title="リスト">≡</button>
+
+        <!-- 取得状況 -->
+        <div class="modal-section">
+          <div class="modal-section-label">取得状況</div>
+          <button class="collect-toggle" id="qr-collect-toggle-btn">○ 取得済みにする</button>
+          <div id="qr-date-row" class="modal-date-row" style="display:none">
+            <label for="qr-date-input">📅 取得日</label>
+            <input type="date" id="qr-date-input" />
           </div>
         </div>
+
+        <!-- 取得場所 -->
+        <div class="modal-section">
+          <div class="modal-section-label">取得場所</div>
+          <div class="modal-field">
+            <label for="qr-location-input">施設名・場所</label>
+            <div class="location-row">
+              <input type="text" id="qr-location-input" placeholder="例：道の駅〇〇、△△SA" />
+              <button id="qr-btn-geocode" title="施設名から緯度経度を検索">🔍</button>
+            </div>
+            <div id="qr-geocode-candidates" class="geocode-candidates" style="display:none"></div>
+          </div>
+          <div class="modal-field">
+            <label>緯度・経度</label>
+            <div class="coords-row">
+              <input type="number" id="qr-lat-input" placeholder="緯度 (35.68…)" step="0.000001" />
+              <input type="number" id="qr-lng-input" placeholder="経度 (139.76…)" step="0.000001" />
+            </div>
+            <div class="coords-actions">
+              <button id="qr-btn-map-picker" class="btn-map-picker">🗺 地図で場所を指定</button>
+              <a id="qr-map-link" href="#" target="_blank" rel="noopener" style="display:none">🗺 地図で確認</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 写真 -->
+        <div class="modal-section">
+          <div class="modal-section-label">写真</div>
+          <div class="photo-grid" id="qr-photo-grid"></div>
+          <div class="photo-add-btns">
+            <label class="photo-add-btn" for="qr-photo-input">
+              📷 写真を追加
+              <input type="file" id="qr-photo-input" accept="image/*" multiple style="display:none" />
+            </label>
+          </div>
+        </div>
+
+        <!-- メモ -->
+        <div class="modal-section">
+          <div class="modal-section-label">メモ</div>
+          <div class="modal-field">
+            <textarea id="qr-memo-input" placeholder="自由にメモを入力…"></textarea>
+          </div>
+        </div>
+
+        <!-- 登録ボタン -->
+        <div class="modal-section modal-submit-section">
+          <button id="qr-submit-btn" class="btn-modal-submit" disabled>✓ 登録</button>
+        </div>
+
+        <!-- 登録後リンク -->
+        <div id="qr-success-bar" class="qr-success-bar" style="display:none">
+          <span id="qr-success-msg"></span>
+          <button id="qr-detail-link-btn" class="qr-detail-link-btn">詳細を見る →</button>
+        </div>
       </div>
 
-      <div id="routes-container" class="routes-grid"></div>
+
+
     </div>
 
     <!-- ===== 一覧 ===== -->
@@ -499,6 +548,12 @@
         <div class="detail-section-label"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9H3V2z" fill="currentColor" opacity=".85"/><path d="M10 2v3h3" stroke="#fff" stroke-width="1"/><path d="M5.5 7h5M5.5 9.5h5M5.5 12h3" stroke="#fff" stroke-width="1" stroke-linecap="round"/></svg> 概要</div>
         <div class="detail-wiki-text" id="gd-wiki-text"></div>
         <a class="detail-wiki-link" id="gd-wiki-link" href="#" target="_blank" rel="noopener">Wikipedia で詳しく見る →</a>
+      </div>
+
+      <!-- アクションボタン -->
+      <div class="detail-actions" id="gd-actions">
+        <button class="detail-action-btn detail-action-edit" id="gd-edit-btn">✏️ 取得情報を編集</button>
+        <button class="detail-action-btn detail-action-toggle" id="gd-toggle-btn">○ 取得済みにする</button>
       </div>
 
       <!-- 取得情報（日時・場所） -->
