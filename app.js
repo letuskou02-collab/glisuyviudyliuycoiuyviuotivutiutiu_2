@@ -14,7 +14,6 @@ let gallerySortOrder = 'date-desc';
 let searchQuery = '';
 let isListView = false;
 let activeModalId = null;
-let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 let currentPhotos = [];
 let tapTimers = {};
 let currentView = 'home';
@@ -233,7 +232,6 @@ function quickToggle(id, card) {
 // === ルート一覧レンダリング ===
 function renderRoutes() {
   const container = document.getElementById('routes-container');
-  if (!container) return; // 登録タブ一覧グリッドが存在しない場合はスキップ
   const filtered = getFilteredRoutes();
   container.className = isListView ? 'routes-list' : 'routes-grid';
   container.innerHTML = '';
@@ -338,37 +336,23 @@ let activeDetailId = null;
 
 // モーダル表示中の背景スクロール防止（position:fixed方式 - iOS Safari対応）
 let _scrollY = 0;
-let _lockCount = 0;
 function _lockBgScroll() {
-  _lockCount++;
   const appBody = document.getElementById('app-body');
   _scrollY = appBody.scrollTop;
+  appBody.style.position = 'fixed';
+  appBody.style.top = `-${_scrollY}px`;
+  appBody.style.left = '0';
+  appBody.style.right = '0';
   appBody.style.overflow = 'hidden';
 }
 function _unlockBgScroll() {
-  _lockCount = Math.max(0, _lockCount - 1);
-  if (_lockCount > 0) return;
   const appBody = document.getElementById('app-body');
+  appBody.style.position = '';
+  appBody.style.top = '';
+  appBody.style.left = '';
+  appBody.style.right = '';
   appBody.style.overflow = '';
   appBody.scrollTop = _scrollY;
-}
-// 全モーダルが閉じているのにロックが残っている場合の強制リセット
-function _forceUnlockIfAllClosed() {
-  const anyOpen =
-    document.getElementById('modal-overlay')?.classList.contains('open') ||
-    document.getElementById('detail-overlay')?.classList.contains('open') ||
-    document.getElementById('gallery-detail-overlay')?.classList.contains('open') ||
-    document.getElementById('import-modal-overlay')?.classList.contains('open') ||
-    document.getElementById('map-picker-overlay')?.style.display === 'flex';
-  if (!anyOpen) {
-    _lockCount = 0;
-    const appBody = document.getElementById('app-body');
-    appBody.style.overflow = '';
-    appBody.style.position = '';
-    appBody.style.top = '';
-    appBody.classList.remove('modal-open');
-    document.querySelector('.bottom-tab-bar').style.display = '';
-  }
 }
 
 function openDetail(id) {
@@ -475,7 +459,6 @@ function closeDetail() {
 
 // === 一覧用詳細シート（表示専用） ===
 let activeGalleryDetailId = null;
-let _reopenGalleryDetailId = null; // gd-edit-btnから開いた場合にgallery-detailを再表示するID
 
 function openGalleryDetail(id) {
   const route = KOKUDO_ROUTES.find(r => r.id === id);
@@ -571,13 +554,6 @@ function openGalleryDetail(id) {
     photosSec.style.display = 'block';
   } else {
     photosSec.style.display = 'none';
-  }
-
-  // アクションボタンの状態を設定
-  const gdToggleBtn = document.getElementById('gd-toggle-btn');
-  if (gdToggleBtn) {
-    gdToggleBtn.textContent = collected ? '✓ 取得済み' : '○ 取得済みにする';
-    gdToggleBtn.className = 'detail-action-btn detail-action-toggle' + (collected ? ' active' : '');
   }
 
   document.getElementById('gallery-detail-overlay').classList.add('open');
@@ -709,36 +685,17 @@ function closeModal(save = true) {
     const lngVal = document.getElementById('modal-lng-input').value;
     const lat = latVal !== '' ? parseFloat(latVal) : null;
     const lng = lngVal !== '' ? parseFloat(lngVal) : null;
+    const dateVal = document.getElementById('modal-date-input').value || null;
     const d = getRouteData(activeModalId);
-    // 日付：取得済みの場合のみ入力値を保存（空なら既存値を維持）
-    if (d.collected) {
-      const dateVal = document.getElementById('modal-date-input').value || d.date || null;
-      setRouteData(activeModalId, { date: dateVal });
-    }
+    if (d.collected) setRouteData(activeModalId, { date: dateVal });
     setRouteData(activeModalId, { memo, location, lat, lng, photos: currentPhotos });
     renderAll();
-    // 一覧詳細シートが開いていれば最新データで再描画
-    if (activeGalleryDetailId !== null) {
-      openGalleryDetail(activeGalleryDetailId);
-    }
   }
   document.getElementById('modal-overlay').classList.remove('open');
   activeModalId = null;
   document.getElementById('app-body').classList.remove('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = '';
   _unlockBgScroll();
-  // detail-edit-btnから来た場合は詳細シートを再表示
-  if (_reopenDetailId !== null) {
-    const _rid = _reopenDetailId;
-    _reopenDetailId = null;
-    setTimeout(() => openDetail(_rid), 50);
-  }
-  // gd-edit-btnから来た場合はgallery-detailを再表示
-  if (_reopenGalleryDetailId !== null) {
-    const _gid = _reopenGalleryDetailId;
-    _reopenGalleryDetailId = null;
-    setTimeout(() => openGalleryDetail(_gid), 50);
-  }
 }
 
 // === エクスポート / インポート / リセット ===
@@ -1226,16 +1183,9 @@ function confirmMapPicker() {
   if (!pickerLatLng) return;
   const lat = parseFloat(pickerLatLng.lat.toFixed(6));
   const lng = parseFloat(pickerLatLng.lng.toFixed(6));
-  if (_qrMapPickerMode) {
-    document.getElementById('qr-lat-input').value = lat;
-    document.getElementById('qr-lng-input').value = lng;
-    qrUpdateMapLink(lat, lng);
-    _qrMapPickerMode = false;
-  } else {
-    document.getElementById('modal-lat-input').value = lat;
-    document.getElementById('modal-lng-input').value = lng;
-    updateMapLink(lat, lng);
-  }
+  document.getElementById('modal-lat-input').value = lat;
+  document.getElementById('modal-lng-input').value = lng;
+  updateMapLink(lat, lng);
   closeMapPicker();
 }
 
@@ -1289,413 +1239,6 @@ function initHomeMap() {
   else if (pins.length > 1) mapInstance.fitBounds(pins, { padding: [40, 40], maxZoom: 13 });
 }
 
-// === クイック登録フォーム ===
-let qrCurrentPhotos = [];
-let qrCurrentRouteId = null; // 現在選択中の国道ID
-let _qrMapPickerMode = false; // 地図ピッカーをQRフォームから開いたかフラグ
-
-function qrUpdateSubmitBtn() {
-  const btn = document.getElementById('qr-submit-btn');
-  if (!btn) return;
-  btn.disabled = (qrCurrentRouteId === null);
-}
-
-function qrUpdatePreview(id) {
-  const previewEl = document.getElementById('qr-route-preview');
-  const errorEl = document.getElementById('qr-route-error');
-  if (id === null) {
-    previewEl.style.display = 'none';
-    errorEl.style.display = 'none';
-    qrCurrentRouteId = null;
-    qrUpdateSubmitBtn();
-    return;
-  }
-  const route = KOKUDO_ROUTES.find(r => r.id === id);
-  if (!route) {
-    previewEl.style.display = 'none';
-    errorEl.style.display = '';
-    qrCurrentRouteId = null;
-    qrUpdateSubmitBtn();
-    return;
-  }
-  errorEl.style.display = 'none';
-  qrCurrentRouteId = id;
-
-  // バッジ
-  const badgeEl = document.getElementById('qr-preview-badge');
-  const signUrl = getRouteSignUrl(id);
-  if (signUrl) {
-    badgeEl.innerHTML = `<img src="${signUrl}" alt="国道${id}号標識" onerror="this.parentNode.innerHTML='<div class=\'route-sign-placeholder\'></div>'" />`;
-  } else {
-    badgeEl.innerHTML = `<div class="route-sign-placeholder"><span>${id}</span></div>`;
-  }
-
-  // 情報
-  document.getElementById('qr-preview-num').textContent = `国道${id}号`;
-  const sub = [route.region, route.type].filter(Boolean).join('・');
-  document.getElementById('qr-preview-sub').textContent = sub;
-  const path = route.from && route.to ? `${route.from} → ${route.to}` : (route.section || '');
-  document.getElementById('qr-preview-path').textContent = path;
-
-  previewEl.style.display = 'flex';
-
-  // 既存データを読み込む
-  const d = getRouteData(id);
-  qrLoadExistingData(d);
-  qrUpdateSubmitBtn();
-}
-
-function qrLoadExistingData(d) {
-  // 取得状況
-  const toggleBtn = document.getElementById('qr-collect-toggle-btn');
-  const dateRow = document.getElementById('qr-date-row');
-  const dateInput = document.getElementById('qr-date-input');
-  if (d.collected) {
-    toggleBtn.textContent = '✓ 取得済み';
-    toggleBtn.className = 'collect-toggle active';
-    dateRow.style.display = '';
-    dateInput.value = d.date || '';
-  } else {
-    toggleBtn.textContent = '○ 取得済みにする';
-    toggleBtn.className = 'collect-toggle';
-    dateRow.style.display = 'none';
-    dateInput.value = '';
-  }
-  // 場所
-  document.getElementById('qr-location-input').value = d.location || '';
-  document.getElementById('qr-lat-input').value = d.lat != null ? d.lat : '';
-  document.getElementById('qr-lng-input').value = d.lng != null ? d.lng : '';
-  qrUpdateMapLink(d.lat, d.lng);
-  // 写真
-  qrCurrentPhotos = Array.isArray(d.photos) ? [...d.photos] : [];
-  qrRenderPhotoGrid();
-  // メモ
-  document.getElementById('qr-memo-input').value = d.memo || '';
-}
-
-function qrUpdateMapLink(lat, lng) {
-  const link = document.getElementById('qr-map-link');
-  if (!link) return;
-  if (lat != null && lng != null && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng))) {
-    link.href = `https://maps.google.com/maps?q=${lat},${lng}`;
-    link.style.display = 'inline';
-  } else {
-    link.style.display = 'none';
-  }
-}
-
-function qrRenderPhotoGrid() {
-  const grid = document.getElementById('qr-photo-grid');
-  if (!grid) return;
-  grid.innerHTML = '';
-  qrCurrentPhotos.forEach((src, idx) => {
-    const wrap = document.createElement('div');
-    wrap.className = 'photo-thumb' + (idx === 0 && qrCurrentPhotos.length > 1 ? ' photo-thumb-cover' : '');
-    const img = document.createElement('img');
-    img.src = src; img.alt = `写真${idx+1}`; img.loading = 'lazy';
-    img.addEventListener('click', () => {
-      const ov = document.createElement('div');
-      ov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
-      const big = document.createElement('img');
-      big.src = src; big.style.cssText = 'max-width:92vw;max-height:92vh;border-radius:8px;';
-      ov.appendChild(big);
-      ov.addEventListener('click', () => document.body.removeChild(ov));
-      document.body.appendChild(ov);
-    });
-    if (qrCurrentPhotos.length > 1) {
-      if (idx === 0) {
-        const badge = document.createElement('div');
-        badge.className = 'photo-cover-badge';
-        badge.textContent = '表紙';
-        wrap.appendChild(badge);
-      } else {
-        const coverBtn = document.createElement('button');
-        coverBtn.className = 'photo-cover-btn';
-        coverBtn.title = '一覧の表紙にする';
-        coverBtn.textContent = '⭐';
-        coverBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          qrCurrentPhotos.splice(idx, 1);
-          qrCurrentPhotos.unshift(src);
-          qrRenderPhotoGrid();
-          showToast('表紙の写真を変更しました', 'success');
-        });
-        wrap.appendChild(coverBtn);
-      }
-    }
-    const rm = document.createElement('button');
-    rm.className = 'photo-thumb-remove'; rm.textContent = '✕';
-    rm.addEventListener('click', (e) => {
-      e.stopPropagation();
-      qrCurrentPhotos.splice(idx, 1);
-      qrRenderPhotoGrid();
-    });
-    wrap.appendChild(img); wrap.appendChild(rm);
-    grid.appendChild(wrap);
-  });
-}
-
-function qrAddPhotos(files) {
-  const MAX = 800, QUALITY = 0.72;
-  Array.from(files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.naturalWidth, h = img.naturalHeight;
-        if (w > MAX || h > MAX) {
-          const scale = Math.min(MAX/w, MAX/h);
-          w = Math.round(w * scale); h = Math.round(h * scale);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        qrCurrentPhotos.push(canvas.toDataURL('image/jpeg', QUALITY));
-        qrRenderPhotoGrid();
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function qrGeocodeLocation() {
-  const raw = document.getElementById('qr-location-input').value.trim();
-  if (!raw) { showToast('取得場所を入力してください', 'error'); return; }
-  const query = normalizeChainName(raw);
-  if (query !== raw) {
-    document.getElementById('qr-location-input').value = query;
-  }
-  const btn = document.getElementById('qr-btn-geocode');
-  btn.textContent = '⏳'; btn.disabled = true;
-  qrHideCandidates();
-  try {
-    const candidates = await fetchCandidates(query);
-    if (candidates.length === 0) {
-      showToast('施設が見つかりませんでした', 'error');
-    } else if (candidates.length === 1) {
-      qrApplyCandidate(candidates[0]);
-    } else {
-      qrShowCandidates(candidates);
-    }
-  } catch { showToast('検索に失敗しました', 'error'); }
-  finally { btn.textContent = '🔍'; btn.disabled = false; }
-}
-
-function qrApplyCandidate(c) {
-  document.getElementById('qr-lat-input').value = c.lat;
-  document.getElementById('qr-lng-input').value = c.lng;
-  qrUpdateMapLink(c.lat, c.lng);
-  qrHideCandidates();
-  showToast(`📍 ${c.label}`, 'success');
-}
-
-function qrShowCandidates(candidates) {
-  const box = document.getElementById('qr-geocode-candidates');
-  if (!box) return;
-  box.innerHTML = '';
-  candidates.forEach(c => {
-    const btn = document.createElement('button');
-    btn.className = 'geocode-candidate-btn';
-    btn.innerHTML = `<span class="gc-label">${c.label}</span><span class="gc-source">${c.source}</span>`;
-    btn.addEventListener('click', () => qrApplyCandidate(c));
-    box.appendChild(btn);
-  });
-  box.style.display = 'block';
-}
-
-function qrHideCandidates() {
-  const box = document.getElementById('qr-geocode-candidates');
-  if (box) { box.style.display = 'none'; box.innerHTML = ''; }
-}
-
-function qrOpenMapPicker() {
-  // 地図ピッカーの座標入力欄をqr系に向けて開く
-  _qrMapPickerMode = true;
-  const overlay = document.getElementById('map-picker-overlay');
-  overlay.style.display = 'flex';
-  _lockBgScroll();
-
-  const curLat = parseFloat(document.getElementById('qr-lat-input').value);
-  const curLng = parseFloat(document.getElementById('qr-lng-input').value);
-  const hasCoords = !isNaN(curLat) && !isNaN(curLng);
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      if (!pickerMap) {
-        pickerMap = L.map('map-picker-container', { zoomControl: true });
-        L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
-          attribution: '地理院タイル',
-          maxZoom: 18
-        }).addTo(pickerMap);
-        pickerMap.on('click', (e) => {
-          pickerLatLng = e.latlng;
-          if (pickerMarker) {
-            pickerMarker.setLatLng(e.latlng);
-          } else {
-            pickerMarker = L.marker(e.latlng, { draggable: true }).addTo(pickerMap);
-            pickerMarker.on('dragend', (ev) => {
-              pickerLatLng = ev.target.getLatLng();
-              updatePickerHint(pickerLatLng);
-            });
-          }
-          document.getElementById('map-picker-confirm').disabled = false;
-          updatePickerHint(e.latlng);
-        });
-      } else {
-        pickerMap.invalidateSize({ animate: false });
-      }
-      if (hasCoords) {
-        pickerMap.setView([curLat, curLng], 13);
-        pickerLatLng = L.latLng(curLat, curLng);
-        if (pickerMarker) {
-          pickerMarker.setLatLng(pickerLatLng);
-        } else {
-          pickerMarker = L.marker(pickerLatLng, { draggable: true }).addTo(pickerMap);
-          pickerMarker.on('dragend', (ev) => {
-            pickerLatLng = ev.target.getLatLng();
-            updatePickerHint(pickerLatLng);
-          });
-        }
-        document.getElementById('map-picker-confirm').disabled = false;
-        updatePickerHint(pickerLatLng);
-      } else {
-        pickerMap.setView([36.5, 137.0], 5);
-        pickerLatLng = null;
-        document.getElementById('map-picker-confirm').disabled = true;
-        document.getElementById('map-picker-hint').textContent = '地図をタップして場所を指定してください';
-      }
-    });
-  });
-}
-
-function qrConfirmMapPicker() {
-  if (!pickerLatLng) return;
-  const lat = parseFloat(pickerLatLng.lat.toFixed(6));
-  const lng = parseFloat(pickerLatLng.lng.toFixed(6));
-  document.getElementById('qr-lat-input').value = lat;
-  document.getElementById('qr-lng-input').value = lng;
-  qrUpdateMapLink(lat, lng);
-  closeMapPicker();
-  _qrMapPickerMode = false;
-}
-
-function qrSubmit() {
-  if (qrCurrentRouteId === null) return;
-  const id = qrCurrentRouteId;
-
-  const toggleBtn = document.getElementById('qr-collect-toggle-btn');
-  const isCollected = toggleBtn.classList.contains('active');
-  const dateVal = isCollected
-    ? (document.getElementById('qr-date-input').value || new Date().toISOString().slice(0,10))
-    : null;
-  const location = document.getElementById('qr-location-input').value.trim() || null;
-  const lat = parseFloat(document.getElementById('qr-lat-input').value);
-  const lng = parseFloat(document.getElementById('qr-lng-input').value);
-  const memo = document.getElementById('qr-memo-input').value.trim() || null;
-
-  const patch = {
-    collected: isCollected,
-    date: dateVal,
-    location,
-    lat: isNaN(lat) ? null : lat,
-    lng: isNaN(lng) ? null : lng,
-    photos: qrCurrentPhotos,
-    memo,
-  };
-  setRouteData(id, patch);
-  renderAll();
-
-  // 成功バーを表示
-  const successBar = document.getElementById('qr-success-bar');
-  const successMsg = document.getElementById('qr-success-msg');
-  const route = KOKUDO_ROUTES.find(r => r.id === id);
-  successMsg.textContent = `国道${id}号を登録しました`;
-  successBar.style.display = 'flex';
-
-  // 「詳細を見る」ボタンのリンク
-  const linkBtn = document.getElementById('qr-detail-link-btn');
-  linkBtn._targetId = id;
-
-  showToast(`国道${id}号を登録しました ✓`, 'success');
-}
-
-function setupQrEvents() {
-  // 国道番号入力
-  const numInput = document.getElementById('qr-route-num-input');
-  if (!numInput) return;
-
-  let _qrNumTimer = null;
-  numInput.addEventListener('input', () => {
-    clearTimeout(_qrNumTimer);
-    const val = parseInt(numInput.value, 10);
-    if (!numInput.value.trim() || isNaN(val)) {
-      qrUpdatePreview(null);
-      document.getElementById('qr-success-bar').style.display = 'none';
-      return;
-    }
-    // 短いデバウンス
-    _qrNumTimer = setTimeout(() => {
-      qrUpdatePreview(val);
-      document.getElementById('qr-success-bar').style.display = 'none';
-    }, 300);
-  });
-
-  // 取得トグル
-  document.getElementById('qr-collect-toggle-btn').addEventListener('click', () => {
-    const btn = document.getElementById('qr-collect-toggle-btn');
-    const dateRow = document.getElementById('qr-date-row');
-    const dateInput = document.getElementById('qr-date-input');
-    const isNowCollected = btn.classList.contains('active');
-    if (isNowCollected) {
-      btn.textContent = '○ 取得済みにする';
-      btn.className = 'collect-toggle';
-      dateRow.style.display = 'none';
-      dateInput.value = '';
-    } else {
-      btn.textContent = '✓ 取得済み';
-      btn.className = 'collect-toggle active';
-      dateRow.style.display = '';
-      if (!dateInput.value) dateInput.value = new Date().toISOString().slice(0,10);
-    }
-  });
-
-  // ジオコーディング
-  document.getElementById('qr-btn-geocode').addEventListener('click', qrGeocodeLocation);
-  document.getElementById('qr-location-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); qrGeocodeLocation(); }
-  });
-
-  // 緯度経度入力でリンク更新
-  ['qr-lat-input', 'qr-lng-input'].forEach(eid => {
-    document.getElementById(eid).addEventListener('input', () => {
-      const lat = parseFloat(document.getElementById('qr-lat-input').value);
-      const lng = parseFloat(document.getElementById('qr-lng-input').value);
-      qrUpdateMapLink(isNaN(lat) ? null : lat, isNaN(lng) ? null : lng);
-    });
-  });
-
-  // 地図ピッカー
-  document.getElementById('qr-btn-map-picker').addEventListener('click', qrOpenMapPicker);
-
-  // 写真
-  document.getElementById('qr-photo-input').addEventListener('change', (e) => {
-    qrAddPhotos(e.target.files); e.target.value = '';
-  });
-
-  // 登録ボタン
-  document.getElementById('qr-submit-btn').addEventListener('click', qrSubmit);
-
-  // 「詳細を見る」ボタン
-  document.getElementById('qr-detail-link-btn').addEventListener('click', () => {
-    const targetId = document.getElementById('qr-detail-link-btn')._targetId;
-    if (targetId != null) {
-      switchView('gallery');
-      setTimeout(() => openGalleryDetail(targetId), 100);
-    }
-  });
-}
-
 // === イベント設定 ===
 function setupEvents() {
   // ボトムタブ
@@ -1747,7 +1290,7 @@ function setupEvents() {
   });
 
   // モーダル
-  document.getElementById('modal-close').addEventListener('click', () => { _reopenDetailId = null; closeModal(false); });
+  document.getElementById('modal-close').addEventListener('click', () => closeModal(false));
   document.getElementById('btn-modal-submit').addEventListener('click', () => closeModal(true));
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
@@ -1763,36 +1306,9 @@ function setupEvents() {
   document.getElementById('gallery-detail-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('gallery-detail-overlay')) closeGalleryDetail();
   });
-  // 一覧詳細の編集ボタン
-  document.getElementById('gd-edit-btn').addEventListener('click', () => {
-    const id = activeGalleryDetailId;
-    if (id === null) return;
-    closeGalleryDetail();
-    _reopenGalleryDetailId = id;
-    openModal(id);
-  });
-  // 一覧詳細の取得トグルボタン
-  document.getElementById('gd-toggle-btn').addEventListener('click', () => {
-    if (activeGalleryDetailId === null) return;
-    const id = activeGalleryDetailId;
-    const d = getRouteData(id);
-    const newVal = !d.collected;
-    const today = new Date().toISOString().slice(0, 10);
-    setRouteData(id, { collected: newVal, date: newVal ? today : null });
-    renderAll();
-    // ボタンとバッジを更新
-    const toggleBtn = document.getElementById('gd-toggle-btn');
-    toggleBtn.textContent = newVal ? '✓ 取得済み' : '○ 取得済みにする';
-    toggleBtn.className = 'detail-action-btn detail-action-toggle' + (newVal ? ' active' : '');
-    const badge = document.getElementById('gd-route-badge');
-    const hasSign = badge.classList.contains('sign-img');
-    badge.className = 'detail-route-badge' + (hasSign ? ' sign-img' : '') + (newVal ? ' collected' : '');
-    showToast(newVal ? `国道${id}号 ✓ 取得済みに設定` : `国道${id}号 未取得に戻しました`, newVal ? 'success' : 'default');
-  });
   document.getElementById('detail-edit-btn').addEventListener('click', () => {
     const id = activeDetailId;
     closeDetail();
-    _reopenDetailId = id; // 登録後に詳細シートを再表示するフラグ
     openModal(id);
   });
   document.getElementById('detail-toggle-btn').addEventListener('click', () => {
@@ -1928,20 +1444,15 @@ function showUpdateBanner(newWorker) {
 document.addEventListener('DOMContentLoaded', () => {
   // ウェルカムスクリーン: safe-area確定を待ってからフェードアウト
   const welcomeScreen = document.getElementById('welcome-screen');
-  const _hideWelcome = () => {
-    welcomeScreen.classList.add('hidden');
-    welcomeScreen.removeEventListener('transitionend', _hideWelcome);
-  };
   setTimeout(() => {
     welcomeScreen.classList.add('fade-out');
-    welcomeScreen.addEventListener('transitionend', _hideWelcome, { once: true });
-    // transitionendが発火しない場合の保険（400ms = transitionの時間）
-    setTimeout(_hideWelcome, 500);
+    welcomeScreen.addEventListener('transitionend', () => {
+      welcomeScreen.classList.add('hidden');
+    }, { once: true });
   }, 700);
 
   loadData();
   setupEvents();
-  setupQrEvents();
   renderAll();
 
   // メニューカードの遷移イベント
@@ -1953,13 +1464,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ホーム画面から起動
   switchView('home');
-
-  // タブ切替のたびに残留ロックを解除するガード
-  document.querySelectorAll('.tab-item').forEach(tab => {
-    tab.addEventListener('click', () => {
-      setTimeout(_forceUnlockIfAllClosed, 100);
-    });
-  });
 
   registerSW();
 });
