@@ -333,6 +333,7 @@ function renderAll() {
 // === モーダル ===
 // === 国道詳細シート ===
 let activeDetailId = null;
+let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
 // モーダル表示中の背景スクロール防止（position:fixed方式 - iOS Safari対応）
 let _scrollY = 0;
@@ -685,17 +686,30 @@ function closeModal(save = true) {
     const lngVal = document.getElementById('modal-lng-input').value;
     const lat = latVal !== '' ? parseFloat(latVal) : null;
     const lng = lngVal !== '' ? parseFloat(lngVal) : null;
-    const dateVal = document.getElementById('modal-date-input').value || null;
     const d = getRouteData(activeModalId);
-    if (d.collected) setRouteData(activeModalId, { date: dateVal });
+    // 日付：取得済みの場合のみ入力値を保存（空なら既存値を維持）
+    if (d.collected) {
+      const dateVal = document.getElementById('modal-date-input').value || d.date || null;
+      setRouteData(activeModalId, { date: dateVal });
+    }
     setRouteData(activeModalId, { memo, location, lat, lng, photos: currentPhotos });
     renderAll();
+    // 一覧詳細シートが開いていれば最新データで再描画
+    if (activeGalleryDetailId !== null) {
+      openGalleryDetail(activeGalleryDetailId);
+    }
   }
   document.getElementById('modal-overlay').classList.remove('open');
   activeModalId = null;
   document.getElementById('app-body').classList.remove('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = '';
   _unlockBgScroll();
+  // detail-edit-btnから来た場合は詳細シートを再表示
+  if (_reopenDetailId !== null) {
+    const _rid = _reopenDetailId;
+    _reopenDetailId = null;
+    setTimeout(() => openDetail(_rid), 50);
+  }
 }
 
 // === エクスポート / インポート / リセット ===
@@ -1290,7 +1304,7 @@ function setupEvents() {
   });
 
   // モーダル
-  document.getElementById('modal-close').addEventListener('click', () => closeModal(false));
+  document.getElementById('modal-close').addEventListener('click', () => { _reopenDetailId = null; closeModal(false); });
   document.getElementById('btn-modal-submit').addEventListener('click', () => closeModal(true));
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
@@ -1309,6 +1323,7 @@ function setupEvents() {
   document.getElementById('detail-edit-btn').addEventListener('click', () => {
     const id = activeDetailId;
     closeDetail();
+    _reopenDetailId = id; // 登録後に詳細シートを再表示するフラグ
     openModal(id);
   });
   document.getElementById('detail-toggle-btn').addEventListener('click', () => {
