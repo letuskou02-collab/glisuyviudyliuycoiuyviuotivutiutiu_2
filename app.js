@@ -415,6 +415,12 @@ function buildGallery() {
     card.addEventListener('click', () => openGalleryDetail(route.id));
     container.appendChild(card);
 
+    // sign-thumb の img にリトライを設定
+    if (signUrl) {
+      const signImg = card.querySelector('.sign-thumb img');
+      if (signImg) _retryImg(signImg, signUrl);
+    }
+
     // 写真をIndexedDBから非同期ロードしてサムネイルを差し替え
     idbGetPhotos(route.id).then(photos => {
       if (photos && photos.length > 0) {
@@ -439,6 +445,20 @@ function renderAll() {
 let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
+// Wikimedia画像リトライヘルパー（ネットワーク不安定時に最大3回リトライ）
+function _retryImg(img, url, maxRetry = 3, delay = 1500) {
+  let attempts = 0;
+  img.onerror = () => {
+    if (attempts < maxRetry) {
+      attempts++;
+      setTimeout(() => {
+        img.src = url + '?r=' + attempts; // キャッシュバスト
+      }, delay * attempts);
+    }
+  };
+  img.src = url;
+}
+
 // モーダル表示中の背景スクロール防止
 // スクロールロック: position:fixedのオーバーレイが全面を覆うため実質不要
 // カウントのみ管理（iOS Safariのoverflow:hidden副作用を完全排除）
@@ -459,8 +479,9 @@ function openDetail(id) {
   const badge = document.getElementById('detail-route-badge');
   const _signUrl = getRouteSignUrl(id);
   if (_signUrl) {
-    badge.innerHTML = `<img src="${_signUrl}" alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
+    badge.innerHTML = `<img alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
     badge.className = 'detail-route-badge sign-img' + (collected ? ' collected' : '');
+    _retryImg(badge.querySelector('img'), _signUrl);
   } else {
     badge.innerHTML = id;
     badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
@@ -564,8 +585,9 @@ function openGalleryDetail(id) {
   const badge = document.getElementById('gd-route-badge');
   const _signUrl = getRouteSignUrl(id);
   if (_signUrl) {
-    badge.innerHTML = `<img src="${_signUrl}" alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
+    badge.innerHTML = `<img alt="国道${id}号標識" style="width:100%;height:100%;object-fit:contain;" />`;
     badge.className = 'detail-route-badge sign-img' + (collected ? ' collected' : '');
+    _retryImg(badge.querySelector('img'), _signUrl);
   } else {
     badge.innerHTML = id;
     badge.className = 'detail-route-badge' + (collected ? ' collected' : '');
@@ -1332,7 +1354,7 @@ function initHomeMap() {
     const icon = L.divIcon({
       className: '',
       html: signUrl
-        ? `<img src="${signUrl}" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" />`
+        ? `<img src="${signUrl}" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" onerror="if(!this._r)this._r=0;if(this._r<3){this._r++;var u=this.src.split('?')[0];setTimeout(()=>this.src=u+'?r='+this._r,1500*this._r);}" />`
         : `<div style="background:#0055c8;color:white;font-size:10px;font-weight:700;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${id}</div>`,
       iconSize: [36, 36], iconAnchor: [18, 18]
     });
