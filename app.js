@@ -446,7 +446,7 @@ let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
 // Wikimedia画像リトライヘルパー（ネットワーク不安定時に最大3回リトライ）
-function _retryImg(img, url, maxRetry = 3, delay = 1500) {
+function _retryImg(img, url, maxRetry = 6, delay = 1500) {
   let attempts = 0;
   img.onerror = () => {
     if (attempts < maxRetry) {
@@ -923,7 +923,16 @@ function applyImportMerge() {
 function applyImportOverwrite() {
   if (!_importPending) return;
   if (!confirm('現在のすべての記録が削除され、インポートデータに置き換えられます。よろしいですか？')) return;
-  collectedData = _importPending;
+  const incoming = _importPending;
+  // photosをIndexedDBに保存し、collectedDataからは除外
+  for (const id of Object.keys(incoming)) {
+    const { photos, ...rest } = incoming[id] || {};
+    incoming[id] = rest;
+    if (photos && photos.length > 0) {
+      idbSetPhotos(Number(id), photos);
+    }
+  }
+  collectedData = incoming;
   saveData(); renderAll();
   closeImportModal();
   showToast('インポートしました（上書き）', 'success');
@@ -1354,7 +1363,7 @@ function initHomeMap() {
     const icon = L.divIcon({
       className: '',
       html: signUrl
-        ? `<img src="${signUrl}" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" onerror="if(!this._r)this._r=0;if(this._r<3){this._r++;var u=this.src.split('?')[0];setTimeout(()=>this.src=u+'?r='+this._r,1500*this._r);}" />`
+        ? `<img src="${signUrl}" style="width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.4));" onerror="if(!this._r)this._r=0;if(this._r<6){this._r++;var u=this.src.split('?')[0];setTimeout(()=>this.src=u+'?r='+this._r,1500*this._r);}" />`
         : `<div style="background:#0055c8;color:white;font-size:10px;font-weight:700;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.35);">${id}</div>`,
       iconSize: [36, 36], iconAnchor: [18, 18]
     });
