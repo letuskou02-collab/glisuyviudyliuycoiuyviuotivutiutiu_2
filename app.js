@@ -335,30 +335,16 @@ function renderAll() {
 let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
-// モーダル表示中の背景スクロール防止（カウント方式 - ネスト対応）
+// モーダル表示中の背景スクロール防止（カウント管理 - オーバーレイがposition:fixedで全面覆うため実質的な制御は不要）
 let _lockCount = 0;
 function _lockBgScroll() {
   _lockCount++;
-  const appBody = document.getElementById('app-body');
-  appBody.style.overflow = 'hidden';
 }
 function _unlockBgScroll() {
   _lockCount = Math.max(0, _lockCount - 1);
-  if (_lockCount === 0) {
-    const appBody = document.getElementById('app-body');
-    appBody.style.overflow = '';
-  }
 }
 function _forceUnlockIfAllClosed() {
-  const modalOpen = document.getElementById('modal-overlay').classList.contains('open');
-  const detailOpen = document.getElementById('detail-overlay').classList.contains('open');
-  const galleryOpen = document.getElementById('gallery-detail-overlay').classList.contains('open');
-  const mapOpen = document.getElementById('map-picker-overlay').style.display !== 'none';
-  const importOpen = document.getElementById('import-modal-overlay').classList.contains('open');
-  if (!modalOpen && !detailOpen && !galleryOpen && !mapOpen && !importOpen) {
-    _lockCount = 0;
-    document.getElementById('app-body').style.overflow = '';
-  }
+  _lockCount = 0;
 }
 
 function openDetail(id) {
