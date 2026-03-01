@@ -440,39 +440,12 @@ let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
 // モーダル表示中の背景スクロール防止
-// iOS Safari対応: window.scrollYを保存してbody overflow:hidden + height:100%でロック
+// スクロールロック: position:fixedのオーバーレイが全面を覆うため実質不要
+// カウントのみ管理（iOS Safariのoverflow:hidden副作用を完全排除）
 let _lockCount = 0;
-let _savedScrollY = 0;
-function _lockBgScroll() {
-  if (_lockCount === 0) {
-    _savedScrollY = window.scrollY;
-    document.body.style.overflow = 'hidden';
-    document.body.style.height = '100%';
-    document.documentElement.style.overflow = 'hidden';
-    document.documentElement.style.height = '100%';
-  }
-  _lockCount++;
-}
-function _unlockBgScroll() {
-  _lockCount = Math.max(0, _lockCount - 1);
-  if (_lockCount === 0) {
-    document.body.style.overflow = '';
-    document.body.style.height = '';
-    document.documentElement.style.overflow = '';
-    document.documentElement.style.height = '';
-    window.scrollTo(0, _savedScrollY);
-  }
-}
-function _forceUnlockIfAllClosed() {
-  if (_lockCount > 0) {
-    _lockCount = 0;
-    document.body.style.overflow = '';
-    document.body.style.height = '';
-    document.documentElement.style.overflow = '';
-    document.documentElement.style.height = '';
-    window.scrollTo(0, _savedScrollY);
-  }
-}
+function _lockBgScroll() { _lockCount++; }
+function _unlockBgScroll() { _lockCount = Math.max(0, _lockCount - 1); }
+function _forceUnlockIfAllClosed() { _lockCount = 0; }
 
 function openDetail(id) {
   const route = KOKUDO_ROUTES.find(r => r.id === id);
@@ -800,8 +773,6 @@ function openModal(id) {
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('app-body').classList.add('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = 'none';
-  // iOS Safari: スクロール位置をリセットしてからロック（fixed要素のヒットテストずれ防止）
-  window.scrollTo(0, 0);
   _lockBgScroll();
 }
 
@@ -1387,7 +1358,7 @@ function setupEvents() {
   document.querySelectorAll('.tab-item').forEach(btn => {
     btn.addEventListener('click', () => {
       switchView(btn.dataset.view);
-      setTimeout(_forceUnlockIfAllClosed, 100);
+      _forceUnlockIfAllClosed();
     });
   });
 
@@ -1632,6 +1603,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadData();
   setupEvents();
+  // 万が一前回のセッションでoverflowロックが残っていた場合に強制クリア
+  document.body.style.removeProperty('overflow');
+  document.body.style.removeProperty('height');
+  document.documentElement.style.removeProperty('overflow');
+  document.documentElement.style.removeProperty('height');
   renderAll();
   migratePhotosToIDB(); // 既存写真データをIndexedDBへ移行（初回のみ）
 
