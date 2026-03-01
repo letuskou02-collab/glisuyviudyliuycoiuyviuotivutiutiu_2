@@ -335,48 +335,16 @@ function renderAll() {
 let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
-// モーダル表示中の背景スクロール防止（iOS Safari対応: position:fixed方式）
+// モーダル表示中の背景スクロール防止（カウント管理）
 let _lockCount = 0;
-let _savedScrollY = 0;
 function _lockBgScroll() {
-  if (_lockCount === 0) {
-    _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-    const appBody = document.getElementById('app-body');
-    if (appBody) {
-      appBody.style.position = 'fixed';
-      appBody.style.top = -_savedScrollY + 'px';
-      appBody.style.left = '0';
-      appBody.style.right = '0';
-      appBody.style.bottom = '0';
-    }
-  }
   _lockCount++;
 }
 function _unlockBgScroll() {
   _lockCount = Math.max(0, _lockCount - 1);
-  if (_lockCount === 0) {
-    const appBody = document.getElementById('app-body');
-    if (appBody) {
-      appBody.style.position = '';
-      appBody.style.top = '';
-      appBody.style.left = '';
-      appBody.style.right = '';
-      appBody.style.bottom = '';
-    }
-    window.scrollTo(0, _savedScrollY);
-  }
 }
 function _forceUnlockIfAllClosed() {
   _lockCount = 0;
-  const appBody = document.getElementById('app-body');
-  if (appBody) {
-    appBody.style.position = '';
-    appBody.style.top = '';
-    appBody.style.left = '';
-    appBody.style.right = '';
-    appBody.style.bottom = '';
-  }
-  window.scrollTo(0, _savedScrollY);
 }
 
 function openDetail(id) {
@@ -1151,7 +1119,6 @@ let pickerLatLng = null;
 function openMapPicker() {
   const overlay = document.getElementById('map-picker-overlay');
   overlay.style.display = 'flex';
-  _lockBgScroll();
 
   // 現在の緯度経度があれば中心に、なければ日本全体
   const curLat = parseFloat(document.getElementById('modal-lat-input').value);
@@ -1218,7 +1185,6 @@ function updatePickerHint(latlng) {
 
 function closeMapPicker() {
   document.getElementById('map-picker-overlay').style.display = 'none';
-  _unlockBgScroll();
 }
 
 function confirmMapPicker() {
@@ -1336,7 +1302,13 @@ function setupEvents() {
 
   // モーダル
   document.getElementById('modal-close').addEventListener('click', () => { _reopenDetailId = null; closeModal(false); });
-  document.getElementById('btn-modal-submit').addEventListener('click', () => closeModal(true));
+  const _submitBtn = document.getElementById('btn-modal-submit');
+  _submitBtn.addEventListener('click', () => closeModal(true));
+  // iOS Safari: clickが発火しない場合のtouchend fallback
+  _submitBtn.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    closeModal(true);
+  }, { passive: false });
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
   });

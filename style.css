@@ -690,7 +690,7 @@ input, select, textarea { font-family: inherit; }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.55);
-  z-index: 200;
+  z-index: 10000;
   display: none;
   align-items: flex-end;
   justify-content: center;
