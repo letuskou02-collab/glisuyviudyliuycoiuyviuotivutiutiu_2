@@ -335,16 +335,48 @@ function renderAll() {
 let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
-// モーダル表示中の背景スクロール防止（カウント管理 - オーバーレイがposition:fixedで全面覆うため実質的な制御は不要）
+// モーダル表示中の背景スクロール防止（iOS Safari対応: position:fixed方式）
 let _lockCount = 0;
+let _savedScrollY = 0;
 function _lockBgScroll() {
+  if (_lockCount === 0) {
+    _savedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+    const appBody = document.getElementById('app-body');
+    if (appBody) {
+      appBody.style.position = 'fixed';
+      appBody.style.top = -_savedScrollY + 'px';
+      appBody.style.left = '0';
+      appBody.style.right = '0';
+      appBody.style.bottom = '0';
+    }
+  }
   _lockCount++;
 }
 function _unlockBgScroll() {
   _lockCount = Math.max(0, _lockCount - 1);
+  if (_lockCount === 0) {
+    const appBody = document.getElementById('app-body');
+    if (appBody) {
+      appBody.style.position = '';
+      appBody.style.top = '';
+      appBody.style.left = '';
+      appBody.style.right = '';
+      appBody.style.bottom = '';
+    }
+    window.scrollTo(0, _savedScrollY);
+  }
 }
 function _forceUnlockIfAllClosed() {
   _lockCount = 0;
+  const appBody = document.getElementById('app-body');
+  if (appBody) {
+    appBody.style.position = '';
+    appBody.style.top = '';
+    appBody.style.left = '';
+    appBody.style.right = '';
+    appBody.style.bottom = '';
+  }
+  window.scrollTo(0, _savedScrollY);
 }
 
 function openDetail(id) {
