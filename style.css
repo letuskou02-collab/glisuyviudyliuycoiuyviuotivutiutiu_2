@@ -703,13 +703,13 @@ input, select, textarea { font-family: inherit; }
 .modal-sheet {
   width: 100%;
   max-width: 540px;
-  max-height: 88dvh;
+  max-height: 92dvh;
   background: #f2f2f7;
   border-radius: 20px 20px 0 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   animation: slideUp 0.25s ease;
-  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }
 @keyframes slideUp {
   from { transform: translateY(30px); opacity: 0; }

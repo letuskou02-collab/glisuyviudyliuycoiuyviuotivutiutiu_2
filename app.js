@@ -335,25 +335,30 @@ function renderAll() {
 let activeDetailId = null;
 let _reopenDetailId = null; // detail-edit-btnから開いた場合に詳細シートを再表示するID
 
-// モーダル表示中の背景スクロール防止（position:fixed方式 - iOS Safari対応）
-let _scrollY = 0;
+// モーダル表示中の背景スクロール防止（カウント方式 - ネスト対応）
+let _lockCount = 0;
 function _lockBgScroll() {
+  _lockCount++;
   const appBody = document.getElementById('app-body');
-  _scrollY = appBody.scrollTop;
-  appBody.style.position = 'fixed';
-  appBody.style.top = `-${_scrollY}px`;
-  appBody.style.left = '0';
-  appBody.style.right = '0';
   appBody.style.overflow = 'hidden';
 }
 function _unlockBgScroll() {
-  const appBody = document.getElementById('app-body');
-  appBody.style.position = '';
-  appBody.style.top = '';
-  appBody.style.left = '';
-  appBody.style.right = '';
-  appBody.style.overflow = '';
-  appBody.scrollTop = _scrollY;
+  _lockCount = Math.max(0, _lockCount - 1);
+  if (_lockCount === 0) {
+    const appBody = document.getElementById('app-body');
+    appBody.style.overflow = '';
+  }
+}
+function _forceUnlockIfAllClosed() {
+  const modalOpen = document.getElementById('modal-overlay').classList.contains('open');
+  const detailOpen = document.getElementById('detail-overlay').classList.contains('open');
+  const galleryOpen = document.getElementById('gallery-detail-overlay').classList.contains('open');
+  const mapOpen = document.getElementById('map-picker-overlay').style.display !== 'none';
+  const importOpen = document.getElementById('import-modal-overlay').classList.contains('open');
+  if (!modalOpen && !detailOpen && !galleryOpen && !mapOpen && !importOpen) {
+    _lockCount = 0;
+    document.getElementById('app-body').style.overflow = '';
+  }
 }
 
 function openDetail(id) {
@@ -1257,7 +1262,10 @@ function initHomeMap() {
 function setupEvents() {
   // ボトムタブ
   document.querySelectorAll('.tab-item').forEach(btn => {
-    btn.addEventListener('click', () => switchView(btn.dataset.view));
+    btn.addEventListener('click', () => {
+      switchView(btn.dataset.view);
+      setTimeout(_forceUnlockIfAllClosed, 100);
+    });
   });
 
   // 検索
@@ -1404,6 +1412,11 @@ function setupEvents() {
   // 写真
   document.getElementById('photo-input').addEventListener('change', (e) => {
     addPhotos(e.target.files); e.target.value = '';
+    // 写真追加後、少し待ってから登録ボタンが見えるようにスクロール
+    setTimeout(() => {
+      const btn = document.getElementById('btn-modal-submit');
+      if (btn) btn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 400);
   });
 
   // ESC
