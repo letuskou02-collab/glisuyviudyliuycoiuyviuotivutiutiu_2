@@ -336,23 +336,37 @@ let activeDetailId = null;
 
 // モーダル表示中の背景スクロール防止（position:fixed方式 - iOS Safari対応）
 let _scrollY = 0;
+let _lockCount = 0;
 function _lockBgScroll() {
+  _lockCount++;
   const appBody = document.getElementById('app-body');
   _scrollY = appBody.scrollTop;
-  appBody.style.position = 'fixed';
-  appBody.style.top = `-${_scrollY}px`;
-  appBody.style.left = '0';
-  appBody.style.right = '0';
   appBody.style.overflow = 'hidden';
 }
 function _unlockBgScroll() {
+  _lockCount = Math.max(0, _lockCount - 1);
+  if (_lockCount > 0) return;
   const appBody = document.getElementById('app-body');
-  appBody.style.position = '';
-  appBody.style.top = '';
-  appBody.style.left = '';
-  appBody.style.right = '';
   appBody.style.overflow = '';
   appBody.scrollTop = _scrollY;
+}
+// 全モーダルが閉じているのにロックが残っている場合の強制リセット
+function _forceUnlockIfAllClosed() {
+  const anyOpen =
+    document.getElementById('modal-overlay')?.classList.contains('open') ||
+    document.getElementById('detail-overlay')?.classList.contains('open') ||
+    document.getElementById('gallery-detail-overlay')?.classList.contains('open') ||
+    document.getElementById('import-modal-overlay')?.classList.contains('open') ||
+    document.getElementById('map-picker-overlay')?.style.display === 'flex';
+  if (!anyOpen) {
+    _lockCount = 0;
+    const appBody = document.getElementById('app-body');
+    appBody.style.overflow = '';
+    appBody.style.position = '';
+    appBody.style.top = '';
+    appBody.classList.remove('modal-open');
+    document.querySelector('.bottom-tab-bar').style.display = '';
+  }
 }
 
 function openDetail(id) {
@@ -1444,11 +1458,15 @@ function showUpdateBanner(newWorker) {
 document.addEventListener('DOMContentLoaded', () => {
   // ウェルカムスクリーン: safe-area確定を待ってからフェードアウト
   const welcomeScreen = document.getElementById('welcome-screen');
+  const _hideWelcome = () => {
+    welcomeScreen.classList.add('hidden');
+    welcomeScreen.removeEventListener('transitionend', _hideWelcome);
+  };
   setTimeout(() => {
     welcomeScreen.classList.add('fade-out');
-    welcomeScreen.addEventListener('transitionend', () => {
-      welcomeScreen.classList.add('hidden');
-    }, { once: true });
+    welcomeScreen.addEventListener('transitionend', _hideWelcome, { once: true });
+    // transitionendが発火しない場合の保険（400ms = transitionの時間）
+    setTimeout(_hideWelcome, 500);
   }, 700);
 
   loadData();
@@ -1464,6 +1482,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ホーム画面から起動
   switchView('home');
+
+  // タブ切替のたびに残留ロックを解除するガード
+  document.querySelectorAll('.tab-item').forEach(tab => {
+    tab.addEventListener('click', () => {
+      setTimeout(_forceUnlockIfAllClosed, 100);
+    });
+  });
 
   registerSW();
 });
