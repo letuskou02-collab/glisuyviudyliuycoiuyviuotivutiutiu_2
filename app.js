@@ -1309,6 +1309,15 @@ function setupEvents() {
     e.preventDefault();
     closeModal(true);
   }, { passive: false });
+  // デバッグ: タップ座標の最前面要素を表示
+  document.addEventListener('touchend', (e) => {
+    const t = e.changedTouches[0];
+    const el = document.elementFromPoint(t.clientX, t.clientY);
+    if (el) {
+      const info = `tag:${el.tagName} id:${el.id||'-'} class:${el.className||'-'}`;
+      document.title = info;
+    }
+  }, { passive: true });
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
   });
