@@ -459,13 +459,7 @@ function _retryImg(img, url, maxRetry = 6, delay = 1500) {
   img.src = url;
 }
 
-// モーダル表示中の背景スクロール防止
-// スクロールロック: position:fixedのオーバーレイが全面を覆うため実質不要
-// カウントのみ管理（iOS Safariのoverflow:hidden副作用を完全排除）
-let _lockCount = 0;
-function _lockBgScroll() { _lockCount++; }
-function _unlockBgScroll() { _lockCount = Math.max(0, _lockCount - 1); }
-function _forceUnlockIfAllClosed() { _lockCount = 0; }
+
 
 function openDetail(id) {
   const route = KOKUDO_ROUTES.find(r => r.id === id);
@@ -536,8 +530,6 @@ function openDetail(id) {
   });
 
   document.getElementById('detail-overlay').classList.add('open');
-  document.getElementById('app-body').classList.add('modal-open');
-  _lockBgScroll();
 }
 
 function _updateDetailStatus(id, d) {
@@ -566,8 +558,6 @@ function _updateDetailStatus(id, d) {
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   activeDetailId = null;
-  document.getElementById('app-body').classList.remove('modal-open');
-  _unlockBgScroll();
 }
 
 // === 一覧用詳細シート（表示専用） ===
@@ -673,15 +663,11 @@ function openGalleryDetail(id) {
   });
 
   document.getElementById('gallery-detail-overlay').classList.add('open');
-  document.getElementById('app-body').classList.add('modal-open');
-  _lockBgScroll();
 }
 
 function closeGalleryDetail() {
   document.getElementById('gallery-detail-overlay').classList.remove('open');
   activeGalleryDetailId = null;
-  document.getElementById('app-body').classList.remove('modal-open');
-  _unlockBgScroll();
 }
 
 // wikitextのマークアップを平文に変換
@@ -793,9 +779,7 @@ function openModal(id) {
   });
 
   document.getElementById('modal-overlay').classList.add('open');
-  document.getElementById('app-body').classList.add('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = 'none';
-  _lockBgScroll();
 }
 
 function closeModal(save = true) {
@@ -820,11 +804,14 @@ function closeModal(save = true) {
       }
     });
   }
-  document.getElementById('modal-overlay').classList.remove('open');
+  const _overlayEl = document.getElementById('modal-overlay');
+  _overlayEl.classList.remove('open');
+  // visualViewport resize で設定されたインラインスタイルをリセット
+  _overlayEl.style.top = '';
+  _overlayEl.style.height = '';
+  _overlayEl.style.bottom = '';
   activeModalId = null;
-  document.getElementById('app-body').classList.remove('modal-open');
   document.querySelector('.bottom-tab-bar').style.display = '';
-  _unlockBgScroll();
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
     _reopenDetailId = null;
@@ -870,14 +857,10 @@ function importData() {
 
 function openImportModal() {
   document.getElementById('import-modal-overlay').classList.add('open');
-  document.getElementById('app-body').classList.add('modal-open');
-  _lockBgScroll();
 }
 function closeImportModal() {
   document.getElementById('import-modal-overlay').classList.remove('open');
   _importPending = null;
-  document.getElementById('app-body').classList.remove('modal-open');
-  _unlockBgScroll();
 }
 
 function applyImportMerge() {
@@ -1389,7 +1372,6 @@ function setupEvents() {
   document.querySelectorAll('.tab-item').forEach(btn => {
     btn.addEventListener('click', () => {
       switchView(btn.dataset.view);
-      _forceUnlockIfAllClosed();
     });
   });
 
@@ -1568,13 +1550,7 @@ function setupEvents() {
     };
     window.visualViewport.addEventListener('resize', _onVpResize);
     window.visualViewport.addEventListener('scroll', _onVpResize);
-    // モーダルが閉じたらリセット
-    document.getElementById('modal-close').addEventListener('click', () => {
-      const overlay = document.getElementById('modal-overlay');
-      overlay.style.top = '';
-      overlay.style.height = '';
-      overlay.style.bottom = '';
-    });
+    // リセットは closeModal 内で行うためここでは不要
   }
 }
 
@@ -1634,11 +1610,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadData();
   setupEvents();
-  // 万が一前回のセッションでoverflowロックが残っていた場合に強制クリア
-  document.body.style.removeProperty('overflow');
-  document.body.style.removeProperty('height');
-  document.documentElement.style.removeProperty('overflow');
-  document.documentElement.style.removeProperty('height');
   renderAll();
   migratePhotosToIDB(); // 既存写真データをIndexedDBへ移行（初回のみ）
 
