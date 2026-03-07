@@ -462,6 +462,32 @@ function _retryImg(img, url, maxRetry = 6, delay = 1500) {
 
 
 
+// === 背景スクロールロック（iOS Safari対応） ===
+let _scrollLockCount = 0;
+function lockBodyScroll() {
+  _scrollLockCount++;
+  if (_scrollLockCount > 1) return;
+  const body = document.querySelector('.app-body');
+  if (!body) return;
+  body._savedScrollTop = body.scrollTop;
+  body.style.overflow = 'hidden';
+  body.style.position = 'fixed';
+  body.style.top = `-${body._savedScrollTop}px`;
+  body.style.width = '100%';
+}
+function unlockBodyScroll() {
+  _scrollLockCount = Math.max(0, _scrollLockCount - 1);
+  if (_scrollLockCount > 0) return;
+  const body = document.querySelector('.app-body');
+  if (!body) return;
+  const savedTop = body._savedScrollTop || 0;
+  body.style.position = '';
+  body.style.top = '';
+  body.style.width = '';
+  body.style.overflow = '';
+  body.scrollTop = savedTop;
+}
+
 function openDetail(id) {
   const route = KOKUDO_ROUTES.find(r => r.id === id);
   if (!route) return;
@@ -531,6 +557,7 @@ function openDetail(id) {
   });
 
   document.getElementById('detail-overlay').classList.add('open');
+  lockBodyScroll();
 }
 
 function _updateDetailStatus(id, d) {
@@ -559,6 +586,7 @@ function _updateDetailStatus(id, d) {
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   activeDetailId = null;
+  unlockBodyScroll();
 }
 
 // === 一覧用詳細シート（表示専用） ===
@@ -664,11 +692,13 @@ function openGalleryDetail(id) {
   });
 
   document.getElementById('gallery-detail-overlay').classList.add('open');
+  lockBodyScroll();
 }
 
 function closeGalleryDetail() {
   document.getElementById('gallery-detail-overlay').classList.remove('open');
   activeGalleryDetailId = null;
+  unlockBodyScroll();
 }
 
 // wikitextのマークアップを平文に変換
@@ -791,15 +821,7 @@ function openModal(id) {
   }, 260);
   const _rc = document.getElementById('routes-container');
   if (_rc) _rc.style.overflow = 'hidden';
-  // モーダル表示中は背景スクロールを完全に止める（iOS Safari対応）
-  const _body = document.querySelector('.app-body');
-  if (_body) {
-    _body._savedScrollTop = _body.scrollTop;
-    _body.style.overflow = 'hidden';
-    _body.style.position = 'fixed';
-    _body.style.top = `-${_body._savedScrollTop}px`;
-    _body.style.width = '100%';
-  }
+  lockBodyScroll();
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 }
 
@@ -830,16 +852,7 @@ function closeModal(save = true) {
   activeModalId = null;
   const _rc2 = document.getElementById('routes-container');
   if (_rc2) _rc2.style.overflow = '';
-  // 背景スクロールを復元
-  const _body2 = document.querySelector('.app-body');
-  if (_body2) {
-    const savedTop = _body2._savedScrollTop || 0;
-    _body2.style.position = '';
-    _body2.style.top = '';
-    _body2.style.width = '';
-    _body2.style.overflow = '';
-    _body2.scrollTop = savedTop;
-  }
+  unlockBodyScroll();
   document.querySelector('.bottom-tab-bar').style.display = '';
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
@@ -886,9 +899,11 @@ function importData() {
 
 function openImportModal() {
   document.getElementById('import-modal-overlay').classList.add('open');
+  lockBodyScroll();
 }
 function closeImportModal() {
   document.getElementById('import-modal-overlay').classList.remove('open');
+  unlockBodyScroll();
   _importPending = null;
 }
 
