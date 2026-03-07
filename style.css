@@ -780,7 +780,6 @@ input, select, textarea { font-family: inherit; }
   display: none;
   align-items: flex-end;
   justify-content: center;
-  touch-action: none;
 }
 .modal-overlay.open { display: flex; }
 .modal-sheet {
@@ -792,7 +791,6 @@ input, select, textarea { font-family: inherit; }
   border-radius: 20px 20px 0 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
   animation: slideUp 0.25s ease;
   padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
 }

@@ -462,31 +462,6 @@ function _retryImg(img, url, maxRetry = 6, delay = 1500) {
 
 
 
-// === 背景スクロールロック（iOS Safari対応: touchmove preventDefault） ===
-let _scrollLockCount = 0;
-function _preventTouchMove(e) {
-  // モーダルシート内のスクロール可能要素は通す
-  let el = e.target;
-  while (el && el !== document.body) {
-    if (el.classList && (
-      el.classList.contains('modal-sheet') ||
-      el.classList.contains('import-modal')
-    )) return;
-    el = el.parentNode;
-  }
-  e.preventDefault();
-}
-function lockBodyScroll() {
-  _scrollLockCount++;
-  if (_scrollLockCount > 1) return;
-  document.addEventListener('touchmove', _preventTouchMove, { passive: false });
-}
-function unlockBodyScroll() {
-  _scrollLockCount = Math.max(0, _scrollLockCount - 1);
-  if (_scrollLockCount > 0) return;
-  document.removeEventListener('touchmove', _preventTouchMove);
-}
-
 function openDetail(id) {
   const route = KOKUDO_ROUTES.find(r => r.id === id);
   if (!route) return;
@@ -816,7 +791,6 @@ function openModal(id) {
   }, 260);
   const _rc = document.getElementById('routes-container');
   if (_rc) _rc.style.overflow = 'hidden';
-  lockBodyScroll();
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 }
 
@@ -847,7 +821,6 @@ function closeModal(save = true) {
   activeModalId = null;
   const _rc2 = document.getElementById('routes-container');
   if (_rc2) _rc2.style.overflow = '';
-  unlockBodyScroll();
   document.querySelector('.bottom-tab-bar').style.display = '';
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
@@ -894,11 +867,9 @@ function importData() {
 
 function openImportModal() {
   document.getElementById('import-modal-overlay').classList.add('open');
-  lockBodyScroll();
 }
 function closeImportModal() {
   document.getElementById('import-modal-overlay').classList.remove('open');
-  unlockBodyScroll();
   _importPending = null;
 }
 
