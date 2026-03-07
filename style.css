@@ -162,6 +162,8 @@ input, select, textarea { font-family: inherit; }
 }
 /* 登録タブ: ヘッダー・ツールバー固定、グリッドのみスクロール */
 #view-list {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
