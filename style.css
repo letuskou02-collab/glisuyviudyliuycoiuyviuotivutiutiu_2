@@ -364,13 +364,29 @@ input, select, textarea { font-family: inherit; }
   background: #003087;
   color: white;
   padding: 14px 16px 12px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
 }
 .page-header h2 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .page-header-icon { display: flex; align-items: center; }
-.list-toolbar { background: white; border-bottom: 1px solid #e5e5ea; position: sticky; top: 48px; z-index: 49; }
+.list-toolbar { background: white; border-bottom: 1px solid #e5e5ea; }
+
+/* 登録タブのみ: ヘッダーとツールバーをfixedで固定 */
+#view-list .page-header {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 0;
+  right: 0;
+  z-index: 200;
+}
+#view-list .list-toolbar {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 48px);
+  left: 0;
+  right: 0;
+  z-index: 199;
+}
+#view-list #routes-container {
+  padding-top: 220px;
+}
 .search-bar {
   display: flex;
   align-items: center;
