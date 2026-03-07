@@ -1448,16 +1448,16 @@ function setupEvents() {
 
   // セレクト
   document.getElementById('region-select').addEventListener('change', (e) => {
-    const opts = Array.from(e.target.selectedOptions).map(o => o.value);
-    // 全選択または0選択の場合はフィルターなし（全表示）
+    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
+    // 「すべて」(value="")が含まれるか全選択ならフィルターなし
     const allCount = e.target.options.length;
-    currentRegions = opts.length === allCount ? [] : opts;
+    currentRegions = selected.includes('') || selected.length === allCount ? [] : selected.filter(v => v !== '');
     renderRoutes();
   });
   document.getElementById('type-select').addEventListener('change', (e) => {
-    const opts = Array.from(e.target.selectedOptions).map(o => o.value);
+    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
     const allCount = e.target.options.length;
-    currentTypes = opts.length === allCount ? [] : opts;
+    currentTypes = selected.includes('') || selected.length === allCount ? [] : selected.filter(v => v !== '');
     renderRoutes();
   });
 
