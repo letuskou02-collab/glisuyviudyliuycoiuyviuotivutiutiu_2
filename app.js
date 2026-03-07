@@ -780,12 +780,7 @@ function openModal(id) {
   });
 
   document.getElementById('modal-overlay').classList.add('open');
-  // シートのスクロール位置を常にトップにリセット
-  const _sheet = document.querySelector('.modal-sheet');
-  if (_sheet) _sheet.scrollTop = 0;
   document.querySelector('.bottom-tab-bar').style.display = 'none';
-  const _rc = document.getElementById('routes-container');
-  if (_rc) _rc.style.overflow = 'hidden';
 }
 
 function closeModal(save = true) {
@@ -814,8 +809,6 @@ function closeModal(save = true) {
   _overlayEl.classList.remove('open');
   activeModalId = null;
   document.querySelector('.bottom-tab-bar').style.display = '';
-  const _rc = document.getElementById('routes-container');
-  if (_rc) _rc.style.overflow = '';
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
     _reopenDetailId = null;
@@ -1279,31 +1272,33 @@ function openMapPicker() {
           document.getElementById('map-picker-confirm').disabled = false;
           updatePickerHint(e.latlng);
         });
-      } else {
-        pickerMap.invalidateSize({ animate: false });
       }
+      // 毎回 invalidateSize してタイルを正しく描画させる
+      pickerMap.invalidateSize({ animate: false });
 
-      if (hasCoords) {
-        pickerMap.setView([curLat, curLng], 13);
-        // 既存座標にマーカーを置く
-        pickerLatLng = L.latLng(curLat, curLng);
-        if (pickerMarker) {
-          pickerMarker.setLatLng(pickerLatLng);
+      setTimeout(() => {
+        if (hasCoords) {
+          pickerMap.setView([curLat, curLng], 13);
+          // 既存座標にマーカーを置く
+          pickerLatLng = L.latLng(curLat, curLng);
+          if (pickerMarker) {
+            pickerMarker.setLatLng(pickerLatLng);
+          } else {
+            pickerMarker = L.marker(pickerLatLng, { draggable: true }).addTo(pickerMap);
+            pickerMarker.on('dragend', (ev) => {
+              pickerLatLng = ev.target.getLatLng();
+              updatePickerHint(pickerLatLng);
+            });
+          }
+          document.getElementById('map-picker-confirm').disabled = false;
+          updatePickerHint(pickerLatLng);
         } else {
-          pickerMarker = L.marker(pickerLatLng, { draggable: true }).addTo(pickerMap);
-          pickerMarker.on('dragend', (ev) => {
-            pickerLatLng = ev.target.getLatLng();
-            updatePickerHint(pickerLatLng);
-          });
+          pickerMap.setView([36.5, 137.0], 5);
+          pickerLatLng = null;
+          document.getElementById('map-picker-confirm').disabled = true;
+          document.getElementById('map-picker-hint').textContent = '地図をタップして場所を指定してください';
         }
-        document.getElementById('map-picker-confirm').disabled = false;
-        updatePickerHint(pickerLatLng);
-      } else {
-        pickerMap.setView([36.5, 137.0], 5);
-        pickerLatLng = null;
-        document.getElementById('map-picker-confirm').disabled = true;
-        document.getElementById('map-picker-hint').textContent = '地図をタップして場所を指定してください';
-      }
+      }, 50);
     });
   });
 }
