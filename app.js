@@ -462,19 +462,29 @@ function _retryImg(img, url, maxRetry = 6, delay = 1500) {
 
 
 
-// === 背景スクロールロック（modal-overlay/import-modal用） ===
+// === 背景スクロールロック（iOS Safari対応: touchmove preventDefault） ===
 let _scrollLockCount = 0;
+function _preventTouchMove(e) {
+  // モーダルシート内のスクロール可能要素は通す
+  let el = e.target;
+  while (el && el !== document.body) {
+    if (el.classList && (
+      el.classList.contains('modal-sheet') ||
+      el.classList.contains('import-modal')
+    )) return;
+    el = el.parentNode;
+  }
+  e.preventDefault();
+}
 function lockBodyScroll() {
   _scrollLockCount++;
   if (_scrollLockCount > 1) return;
-  const body = document.querySelector('.app-body');
-  if (body) body.style.overflowY = 'hidden';
+  document.addEventListener('touchmove', _preventTouchMove, { passive: false });
 }
 function unlockBodyScroll() {
   _scrollLockCount = Math.max(0, _scrollLockCount - 1);
   if (_scrollLockCount > 0) return;
-  const body = document.querySelector('.app-body');
-  if (body) body.style.overflowY = '';
+  document.removeEventListener('touchmove', _preventTouchMove);
 }
 
 function openDetail(id) {
