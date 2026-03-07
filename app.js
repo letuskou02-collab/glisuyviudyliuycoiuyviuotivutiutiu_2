@@ -1447,34 +1447,14 @@ function setupEvents() {
   });
 
   // セレクト
-  document.getElementById('region-filter-btns').addEventListener('click', (e) => {
-    const btn = e.target.closest('.mf-btn');
-    if (!btn) return;
-    const val = btn.dataset.value;
-    if (val === '') {
-      currentRegions = [];
-    } else {
-      const i = currentRegions.indexOf(val);
-      if (i >= 0) currentRegions.splice(i, 1); else currentRegions.push(val);
-    }
-    document.querySelectorAll('#region-filter-btns .mf-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.value === '' ? currentRegions.length === 0 : currentRegions.includes(b.dataset.value));
-    });
+  document.getElementById('region-select').addEventListener('change', (e) => {
+    const opts = Array.from(e.target.selectedOptions).map(o => o.value).filter(v => v !== '');
+    currentRegions = opts;
     renderRoutes();
   });
-  document.getElementById('type-filter-btns').addEventListener('click', (e) => {
-    const btn = e.target.closest('.mf-btn');
-    if (!btn) return;
-    const val = btn.dataset.value;
-    if (val === '') {
-      currentTypes = [];
-    } else {
-      const i = currentTypes.indexOf(val);
-      if (i >= 0) currentTypes.splice(i, 1); else currentTypes.push(val);
-    }
-    document.querySelectorAll('#type-filter-btns .mf-btn').forEach(b => {
-      b.classList.toggle('active', b.dataset.value === '' ? currentTypes.length === 0 : currentTypes.includes(b.dataset.value));
-    });
+  document.getElementById('type-select').addEventListener('change', (e) => {
+    const opts = Array.from(e.target.selectedOptions).map(o => o.value).filter(v => v !== '');
+    currentTypes = opts;
     renderRoutes();
   });
 
