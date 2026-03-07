@@ -1307,6 +1307,38 @@ function updatePickerHint(latlng) {
   document.getElementById('map-picker-hint').textContent = `📍 緯度: ${lat}　経度: ${lng}　（ドラッグで調整できます）`;
 }
 
+function gpsPickerLocation() {
+  if (!navigator.geolocation) {
+    showToast('位置情報が使用できません', 'error'); return;
+  }
+  const btn = document.getElementById('map-picker-gps');
+  btn.textContent = '⏳'; btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      btn.textContent = '📍 現在地'; btn.disabled = false;
+      const latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      pickerLatLng = latlng;
+      pickerMap.setView(latlng, 15);
+      if (pickerMarker) {
+        pickerMarker.setLatLng(latlng);
+      } else {
+        pickerMarker = L.marker(latlng, { draggable: true }).addTo(pickerMap);
+        pickerMarker.on('dragend', (ev) => {
+          pickerLatLng = ev.target.getLatLng();
+          updatePickerHint(pickerLatLng);
+        });
+      }
+      document.getElementById('map-picker-confirm').disabled = false;
+      updatePickerHint(latlng);
+    },
+    (err) => {
+      btn.textContent = '📍 現在地'; btn.disabled = false;
+      showToast('現在地を取得できませんでした', 'error');
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
 function closeMapPicker() {
   document.getElementById('map-picker-overlay').style.display = 'none';
 }
@@ -1524,6 +1556,7 @@ function setupEvents() {
   document.getElementById('btn-map-picker').addEventListener('click', openMapPicker);
   document.getElementById('map-picker-cancel').addEventListener('click', closeMapPicker);
   document.getElementById('map-picker-confirm').addEventListener('click', confirmMapPicker);
+  document.getElementById('map-picker-gps').addEventListener('click', gpsPickerLocation);
 
   // 写真
   document.getElementById('photo-input').addEventListener('change', (e) => {
