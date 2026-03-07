@@ -503,32 +503,29 @@ function openDetail(id) {
   wikiSec.style.display = 'none';
   wikiText.textContent = '';
   wikiText.classList.remove('expanded');
-  fetchRouteWikiInfo(id).then(info => {
-    if (info) {
-      // 起点・終点：Wikiの詳細があれば上書き
-      if (info.from) document.getElementById('detail-from').textContent = info.from;
-      if (info.to)   document.getElementById('detail-to').textContent   = info.to;
-      if (info.length) {
-        const el = document.getElementById('detail-length');
-        el.textContent = info.length;
-        el.className = 'detail-info-value';
-      } else {
-        const el = document.getElementById('detail-length');
-        el.textContent = '—';
-        el.className = 'detail-info-value';
-      }
-      if (info.extract) {
-        wikiText.textContent = info.extract;
-        wikiLink.href = `https://ja.wikipedia.org/wiki/国道${id}号`;
-        wikiSec.style.display = 'block';
-        // タップで全文展開
-        wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
-      }
+  fetchRouteWikiInfoWithRetry(id, (info) => {
+    // 起点・終点：Wikiの詳細があれば上書き
+    if (info.from) document.getElementById('detail-from').textContent = info.from;
+    if (info.to)   document.getElementById('detail-to').textContent   = info.to;
+    if (info.length) {
+      const el = document.getElementById('detail-length');
+      el.textContent = info.length;
+      el.className = 'detail-info-value';
     } else {
       const el = document.getElementById('detail-length');
       el.textContent = '—';
       el.className = 'detail-info-value';
     }
+    if (info.extract) {
+      wikiText.textContent = info.extract;
+      wikiLink.href = `https://ja.wikipedia.org/wiki/国道${id}号`;
+      wikiSec.style.display = 'block';
+      wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
+    }
+  }, () => {
+    const el = document.getElementById('detail-length');
+    el.textContent = '—';
+    el.className = 'detail-info-value';
   });
 
   document.getElementById('detail-overlay').classList.add('open');
@@ -603,25 +600,22 @@ function openGalleryDetail(id) {
   wikiSec.style.display = 'none';
   wikiText.textContent = '';
   wikiText.classList.remove('expanded');
-  fetchRouteWikiInfo(id).then(info => {
-    if (info) {
-      if (info.from) document.getElementById('gd-from').textContent = info.from;
-      if (info.to)   document.getElementById('gd-to').textContent   = info.to;
-      const lenEl = document.getElementById('gd-length');
-      lenEl.textContent = info.length || '—';
-      lenEl.className = 'detail-info-value';
-      if (info.extract) {
-        wikiText.textContent = info.extract;
-        wikiLink.href = `https://ja.wikipedia.org/wiki/国道${id}号`;
-        wikiSec.style.display = 'block';
-        wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
-      }
-
-    } else {
-      const lenEl = document.getElementById('gd-length');
-      lenEl.textContent = '—';
-      lenEl.className = 'detail-info-value';
+  fetchRouteWikiInfoWithRetry(id, (info) => {
+    if (info.from) document.getElementById('gd-from').textContent = info.from;
+    if (info.to)   document.getElementById('gd-to').textContent   = info.to;
+    const lenEl = document.getElementById('gd-length');
+    lenEl.textContent = info.length || '—';
+    lenEl.className = 'detail-info-value';
+    if (info.extract) {
+      wikiText.textContent = info.extract;
+      wikiLink.href = `https://ja.wikipedia.org/wiki/国道${id}号`;
+      wikiSec.style.display = 'block';
+      wikiText.addEventListener('click', () => wikiText.classList.toggle('expanded'), { once: false });
     }
+  }, () => {
+    const lenEl = document.getElementById('gd-length');
+    lenEl.textContent = '—';
+    lenEl.className = 'detail-info-value';
   });
 
   // 取得情報（日時・場所）
@@ -747,6 +741,31 @@ async function fetchRouteWikiInfo(routeId) {
   } catch {
     return null;
   }
+}
+
+// Wikipedia情報リトライラッパー（最大6回・指数バックオフ）
+function fetchRouteWikiInfoWithRetry(routeId, onSuccess, onFail, maxRetry = 6, delay = 1500) {
+  let attempts = 0;
+  function attempt() {
+    fetchRouteWikiInfo(routeId).then(info => {
+      if (info) {
+        onSuccess(info);
+      } else if (attempts < maxRetry) {
+        attempts++;
+        setTimeout(attempt, delay * attempts);
+      } else {
+        if (onFail) onFail();
+      }
+    }).catch(() => {
+      if (attempts < maxRetry) {
+        attempts++;
+        setTimeout(attempt, delay * attempts);
+      } else {
+        if (onFail) onFail();
+      }
+    });
+  }
+  attempt();
 }
 
 function openModal(id) {
