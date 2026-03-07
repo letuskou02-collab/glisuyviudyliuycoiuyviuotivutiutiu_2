@@ -850,16 +850,16 @@ function hideLoading() {
 }
 
 function exportData() {
+  const json = JSON.stringify(collectedData, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kokudo-sticker-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
   showLoading();
   setTimeout(() => {
-    const json = JSON.stringify(collectedData, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `kokudo-sticker-${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
     hideLoading();
     showToast('エクスポートしました', 'success');
   }, 800);
@@ -1566,11 +1566,12 @@ function setupEvents() {
   // モーダル
   document.getElementById('modal-close').addEventListener('click', () => { _reopenDetailId = null; closeModal(false); });
   const _submitBtn = document.getElementById('btn-modal-submit');
-  _submitBtn.addEventListener('click', () => closeModal(true));
+  _submitBtn.addEventListener('click', () => { showLoading(); setTimeout(() => { hideLoading(); closeModal(true); }, 700); });
   // iOS Safari: clickが発火しない場合のtouchend fallback
   _submitBtn.addEventListener('touchend', (e) => {
     e.preventDefault();
-    closeModal(true);
+    showLoading();
+    setTimeout(() => { hideLoading(); closeModal(true); }, 700);
   }, { passive: false });
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
