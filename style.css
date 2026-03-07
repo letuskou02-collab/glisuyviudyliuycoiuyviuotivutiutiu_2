@@ -956,43 +956,27 @@ input, select, textarea { font-family: inherit; }
   opacity: 0.4;
   cursor: default;
 }
-.map-picker-map-wrap {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-.map-picker-map-wrap #map-picker-container {
-  flex: 1;
-  width: 100%;
-  min-height: 0;
-}
 .map-picker-btn-gps {
-  position: absolute;
-  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  right: 16px;
-  z-index: 1000;
-  width: 44px;
-  height: 44px;
-  background: white;
-  border: none;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  background: rgba(255,255,255,0.25);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
   -webkit-tap-highlight-color: transparent;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .map-picker-btn-gps:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: default;
 }
-.map-picker-btn-gps svg {
+#map-picker-container {
+  flex: 1;
   width: 100%;
-  height: 100%;
+  min-height: 0;
 }
 .map-picker-hint {
   background: rgba(0,0,0,0.65);
