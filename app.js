@@ -795,6 +795,8 @@ function openModal(id) {
 }
 
 function closeModal(save = true) {
+  // 写真拡大オーバーレイが開いていれば強制閉じる
+  document.querySelectorAll('.photo-zoom-overlay').forEach(el => el.remove());
   if (activeModalId !== null && save) {
     const memo = document.getElementById('modal-memo-input').value;
     const location = document.getElementById('modal-location-input').value.trim();
@@ -1197,7 +1199,8 @@ function renderPhotoGrid() {
     img.src = src; img.alt = `写真${idx+1}`; img.loading = 'lazy';
     img.addEventListener('click', () => {
       const ov = document.createElement('div');
-      ov.style.cssText = 'position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;';
+      ov.className = 'photo-zoom-overlay';
       const big = document.createElement('img');
       big.src = src; big.style.cssText = 'max-width:92vw;max-height:92vh;border-radius:8px;';
       ov.appendChild(big);
