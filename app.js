@@ -1446,20 +1446,73 @@ function setupEvents() {
     });
   });
 
-  // セレクト
-  document.getElementById('region-select').addEventListener('change', (e) => {
-    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-    // 「すべて」(value="")が含まれるか全選択ならフィルターなし
-    const allCount = e.target.options.length;
-    currentRegions = selected.includes('') || selected.length === allCount ? [] : selected.filter(v => v !== '');
-    renderRoutes();
-  });
-  document.getElementById('type-select').addEventListener('change', (e) => {
-    const selected = Array.from(e.target.selectedOptions).map(o => o.value);
-    const allCount = e.target.options.length;
-    currentTypes = selected.includes('') || selected.length === allCount ? [] : selected.filter(v => v !== '');
-    renderRoutes();
-  });
+  // カスタムドロップダウン共通処理
+  function setupCustomSelect(wrapId, dropdownId, btnId, labelId, varSetter) {
+    const wrap = document.getElementById(wrapId);
+    const dropdown = document.getElementById(dropdownId);
+    const btn = document.getElementById(btnId);
+    const labelEl = document.getElementById(labelId);
+    const allCheckbox = dropdown.querySelector('input[value=""]');
+    const otherCheckboxes = Array.from(dropdown.querySelectorAll('input:not([value=""])'));
+
+    function updateLabel() {
+      if (allCheckbox.checked) {
+        labelEl.textContent = 'すべて';
+      } else {
+        const names = otherCheckboxes
+          .filter(cb => cb.checked)
+          .map(cb => cb.closest('label').textContent.trim());
+        labelEl.textContent = names.length ? names.join('・') : '未選択';
+      }
+    }
+
+    function updateFilter() {
+      if (allCheckbox.checked) {
+        varSetter([]);
+      } else {
+        varSetter(otherCheckboxes.filter(cb => cb.checked).map(cb => cb.value));
+      }
+      renderRoutes();
+    }
+
+    // 「すべて」チェック時：他を全部オフ
+    allCheckbox.addEventListener('change', () => {
+      if (allCheckbox.checked) {
+        otherCheckboxes.forEach(cb => cb.checked = false);
+      }
+      updateLabel();
+      updateFilter();
+    });
+
+    // 個別項目チェック時：「すべて」をオフ
+    otherCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        allCheckbox.checked = false;
+        // 全部オフになったら「すべて」に戻す
+        if (otherCheckboxes.every(c => !c.checked)) {
+          allCheckbox.checked = true;
+        }
+        updateLabel();
+        updateFilter();
+      });
+    });
+
+    // ボタンクリックで開閉
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+    });
+
+    // 外クリックで閉じる
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) dropdown.classList.remove('open');
+    });
+  }
+
+  setupCustomSelect('region-select-wrap', 'region-select-dropdown', 'region-select-btn', 'region-select-label',
+    (v) => { currentRegions = v; });
+  setupCustomSelect('type-select-wrap', 'type-select-dropdown', 'type-select-btn', 'type-select-label',
+    (v) => { currentTypes = v; });
 
   // グリッド/リスト切替
   document.getElementById('btn-grid-view').addEventListener('click', () => {

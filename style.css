@@ -440,17 +440,74 @@ input, select, textarea { font-family: inherit; }
   color: #8e8e93;
   flex-shrink: 0;
 }
-.select-row select {
+/* カスタムドロップダウン */
+.custom-select {
   flex: 1;
+  position: relative;
+}
+.custom-select-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 7px 10px;
   border: 1px solid #e0e0e0;
   border-radius: 10px;
   font-size: 13px;
   background: #f9f9fb;
   color: #1c1c1e;
-  outline: none;
-  -webkit-appearance: none;
-  appearance: none;
+  cursor: pointer;
+  text-align: left;
+  gap: 4px;
+}
+.custom-select-btn span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+.custom-select-arrow {
+  font-size: 10px;
+  color: #8e8e93;
+  flex-shrink: 0;
+}
+.custom-select-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 300;
+  overflow: hidden;
+}
+.custom-select-dropdown.open {
+  display: block;
+}
+.custom-select-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 13px;
+  color: #1c1c1e;
+  cursor: pointer;
+  border-bottom: 1px solid #f2f2f7;
+}
+.custom-select-option:last-child {
+  border-bottom: none;
+}
+.custom-select-option input[type=checkbox] {
+  width: 16px;
+  height: 16px;
+  accent-color: #007aff;
+  flex-shrink: 0;
+}
+.custom-select-option:hover {
+  background: #f2f2f7;
 }
 .select-row + .select-row {
   padding-top: 0;

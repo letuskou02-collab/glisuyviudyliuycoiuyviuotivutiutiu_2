@@ -138,27 +138,67 @@
           <button class="tab-btn" data-filter="not-collected">未取得</button>
         </div>
         <div class="select-row">
-          <label class="select-label" for="region-select">地方</label>
-          <select id="region-select" multiple>
-            <option value="" selected>すべて</option>
-            <option value="北海道" selected>北海道</option>
-            <option value="東北" selected>東北</option>
-            <option value="関東" selected>関東</option>
-            <option value="中部" selected>中部</option>
-            <option value="北陸" selected>北陸</option>
-            <option value="近畿" selected>近畿</option>
-            <option value="中国" selected>中国</option>
-            <option value="四国" selected>四国</option>
-            <option value="九州" selected>九州</option>
-            <option value="沖縄" selected>沖縄</option>
-          </select>
-          <label class="select-label" for="type-select">種別</label>
-          <select id="type-select" multiple>
-            <option value="" selected>すべて</option>
-            <option value="一桁" selected>一桁国道</option>
-            <option value="二桁" selected>二桁国道</option>
-            <option value="三桁" selected>三桁国道</option>
-          </select>
+          <label class="select-label">地方</label>
+          <div class="custom-select" id="region-select-wrap">
+            <button class="custom-select-btn" id="region-select-btn" type="button">
+              <span id="region-select-label">すべて</span><span class="custom-select-arrow">▾</span>
+            </button>
+            <div class="custom-select-dropdown" id="region-select-dropdown">
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="" checked>すべて
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="北海道">北海道
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="東北">東北
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="関東">関東
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="中部">中部
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="北陸">北陸
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="近畿">近畿
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="中国">中国
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="四国">四国
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="九州">九州
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="region" value="沖縄">沖縄
+              </label>
+            </div>
+          </div>
+          <label class="select-label">種別</label>
+          <div class="custom-select" id="type-select-wrap">
+            <button class="custom-select-btn" id="type-select-btn" type="button">
+              <span id="type-select-label">すべて</span><span class="custom-select-arrow">▾</span>
+            </button>
+            <div class="custom-select-dropdown" id="type-select-dropdown">
+              <label class="custom-select-option">
+                <input type="checkbox" name="type" value="" checked>すべて
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="type" value="一桁">一桁国道
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="type" value="二桁">二桁国道
+              </label>
+              <label class="custom-select-option">
+                <input type="checkbox" name="type" value="三桁">三桁国道
+              </label>
+            </div>
+          </div>
         </div>
         <div class="toolbar-right">
           <span id="section-count" class="section-count"></span>
