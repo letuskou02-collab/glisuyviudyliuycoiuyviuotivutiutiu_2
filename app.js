@@ -462,30 +462,19 @@ function _retryImg(img, url, maxRetry = 6, delay = 1500) {
 
 
 
-// === 背景スクロールロック（iOS Safari対応） ===
+// === 背景スクロールロック（modal-overlay/import-modal用） ===
 let _scrollLockCount = 0;
 function lockBodyScroll() {
   _scrollLockCount++;
   if (_scrollLockCount > 1) return;
   const body = document.querySelector('.app-body');
-  if (!body) return;
-  body._savedScrollTop = body.scrollTop;
-  body.style.overflow = 'hidden';
-  body.style.position = 'fixed';
-  body.style.top = `-${body._savedScrollTop}px`;
-  body.style.width = '100%';
+  if (body) body.style.overflowY = 'hidden';
 }
 function unlockBodyScroll() {
   _scrollLockCount = Math.max(0, _scrollLockCount - 1);
   if (_scrollLockCount > 0) return;
   const body = document.querySelector('.app-body');
-  if (!body) return;
-  const savedTop = body._savedScrollTop || 0;
-  body.style.position = '';
-  body.style.top = '';
-  body.style.width = '';
-  body.style.overflow = '';
-  body.scrollTop = savedTop;
+  if (body) body.style.overflowY = '';
 }
 
 function openDetail(id) {
@@ -557,7 +546,6 @@ function openDetail(id) {
   });
 
   document.getElementById('detail-overlay').classList.add('open');
-  lockBodyScroll();
 }
 
 function _updateDetailStatus(id, d) {
@@ -586,7 +574,6 @@ function _updateDetailStatus(id, d) {
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   activeDetailId = null;
-  unlockBodyScroll();
 }
 
 // === 一覧用詳細シート（表示専用） ===
@@ -692,13 +679,11 @@ function openGalleryDetail(id) {
   });
 
   document.getElementById('gallery-detail-overlay').classList.add('open');
-  lockBodyScroll();
 }
 
 function closeGalleryDetail() {
   document.getElementById('gallery-detail-overlay').classList.remove('open');
   activeGalleryDetailId = null;
-  unlockBodyScroll();
 }
 
 // wikitextのマークアップを平文に変換
