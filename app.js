@@ -830,16 +830,28 @@ function closeModal(save = true) {
 }
 
 // === エクスポート / インポート / リセット ===
+// === ローディング表示 ===
+function showLoading() {
+  document.getElementById('loading-overlay').classList.add('active');
+}
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.remove('active');
+}
+
 function exportData() {
-  const json = JSON.stringify(collectedData, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `kokudo-sticker-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('エクスポートしました', 'success');
+  showLoading();
+  setTimeout(() => {
+    const json = JSON.stringify(collectedData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kokudo-sticker-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    hideLoading();
+    showToast('エクスポートしました', 'success');
+  }, 500);
 }
 let _importPending = null; // 選択ダイアログ中に保持するパース済みデータ
 
@@ -1135,7 +1147,10 @@ function addPhotos(files) {
     showToast(`写真は最大${MAX_PHOTOS}枚までです`, 'default');
     return;
   }
-  Array.from(files).forEach(file => {
+  showLoading();
+  const fileArr = Array.from(files);
+  let done = 0;
+  fileArr.forEach(file => {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
@@ -1149,7 +1164,11 @@ function addPhotos(files) {
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         currentPhotos.push(canvas.toDataURL('image/jpeg', QUALITY));
-        renderPhotoGrid();
+        done++;
+        if (done === fileArr.length) {
+          hideLoading();
+          renderPhotoGrid();
+        }
       };
       img.src = ev.target.result;
     };
@@ -1581,6 +1600,8 @@ function setupEvents() {
   // 取得トグル
   document.getElementById('collect-toggle-btn').addEventListener('click', () => {
     if (activeModalId === null) return;
+    showLoading();
+    setTimeout(() => {
     const d = getRouteData(activeModalId);
     const newVal = !d.collected;
     const today = new Date().toISOString().slice(0, 10);
@@ -1601,6 +1622,8 @@ function setupEvents() {
     updateStats(); buildRegionSummary(); buildRecentList();
     const card = document.querySelector(`.route-card[data-id="${activeModalId}"]`);
     if (card) card.classList.toggle('collected', newVal);
+    hideLoading();
+    }, 400);
   });
 
   // その他ページのボタン
