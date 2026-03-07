@@ -430,8 +430,15 @@ input, select, textarea { font-family: inherit; }
 
 .select-row {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   padding: 6px 12px 10px;
+}
+.select-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8e8e93;
+  flex-shrink: 0;
 }
 .select-row select {
   flex: 1;

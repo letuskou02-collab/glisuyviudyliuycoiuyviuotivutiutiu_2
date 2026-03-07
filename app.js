@@ -1448,13 +1448,16 @@ function setupEvents() {
 
   // セレクト
   document.getElementById('region-select').addEventListener('change', (e) => {
-    const opts = Array.from(e.target.selectedOptions).map(o => o.value).filter(v => v !== '');
-    currentRegions = opts;
+    const opts = Array.from(e.target.selectedOptions).map(o => o.value);
+    // 全選択または0選択の場合はフィルターなし（全表示）
+    const allCount = e.target.options.length;
+    currentRegions = opts.length === allCount ? [] : opts;
     renderRoutes();
   });
   document.getElementById('type-select').addEventListener('change', (e) => {
-    const opts = Array.from(e.target.selectedOptions).map(o => o.value).filter(v => v !== '');
-    currentTypes = opts;
+    const opts = Array.from(e.target.selectedOptions).map(o => o.value);
+    const allCount = e.target.options.length;
+    currentTypes = opts.length === allCount ? [] : opts;
     renderRoutes();
   });
 
