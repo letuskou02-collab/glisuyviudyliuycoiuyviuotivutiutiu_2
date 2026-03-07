@@ -782,10 +782,12 @@ function openModal(id) {
     if (_s) _s.scrollTop = 0;
   });
 
-  // display:noneが解除される前にscrollTopをリセット（解除後だと前回位置が復元されてしまう）
-  const _sheet = document.querySelector('.modal-sheet');
-  if (_sheet) _sheet.scrollTop = 0;
   document.getElementById('modal-overlay').classList.add('open');
+  // slideUpアニメーション(0.25s)完了後にスクロールをトップにリセット
+  setTimeout(() => {
+    const _sheet = document.querySelector('.modal-sheet');
+    if (_sheet) _sheet.scrollTop = 0;
+  }, 260);
   const _rc = document.getElementById('routes-container');
   if (_rc) _rc.style.overflow = 'hidden';
   document.querySelector('.bottom-tab-bar').style.display = 'none';
