@@ -385,7 +385,7 @@ input, select, textarea { font-family: inherit; }
   z-index: 199;
 }
 #view-list #routes-container {
-  padding-top: calc(240px + env(safe-area-inset-top, 0px));
+  padding-top: calc(180px + env(safe-area-inset-top, 0px));
 }
 .search-bar {
   display: flex;
