@@ -1691,8 +1691,15 @@ input, select, textarea { font-family: inherit; }
   flex: 1;
 }
 .gd-info-row-location {
-  flex-wrap: wrap;
   align-items: flex-start;
+}
+.gd-info-row-location .label-icon {
+  margin-top: 3px;
+}
+.gd-info-row-location span {
+  flex: 1;
+  white-space: normal;
+  word-break: break-all;
 }
 .gd-map-btn {
   display: inline-flex;
@@ -1706,7 +1713,8 @@ input, select, textarea { font-family: inherit; }
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
-  margin-left: auto;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 .gd-memo span {
   color: #555;
