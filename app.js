@@ -1477,7 +1477,12 @@ function setupEvents() {
 
     // 「すべて」チェック時：他を全部オフ
     allCheckbox.addEventListener('change', () => {
-      if (allCheckbox.checked) {
+      if (!allCheckbox.checked) {
+        // 「すべて」を外そうとしても他が何も選ばれていなければ戻す
+        if (otherCheckboxes.every(c => !c.checked)) {
+          allCheckbox.checked = true;
+        }
+      } else {
         otherCheckboxes.forEach(cb => cb.checked = false);
       }
       updateLabel();
