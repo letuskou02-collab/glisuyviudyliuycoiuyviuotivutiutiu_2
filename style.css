@@ -66,11 +66,11 @@ input, select, textarea { font-family: inherit; }
 .app-body {
   width: 100%;
   padding-top: env(safe-area-inset-top, 0px);
-  overflow: hidden;
-  height: calc(100dvh - env(safe-area-inset-top, 0px));
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 100dvh;
   background: #f2f2f7;
-  display: flex;
-  flex-direction: column;
 }
 
 /* === ボトムタブバー === */
@@ -155,19 +155,14 @@ input, select, textarea { font-family: inherit; }
 /* === ページ共通 === */
 .view-page {
   width: 100%;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  min-height: calc(100dvh - 60px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
 }
-/* 登録タブ: ヘッダー・ツールバー固定、グリッドのみスクロール */
+/* 登録タブ: ヘッダー・ツールバーだけ固定し、国道グリッドのみスクロール */
 #view-list {
-  flex: 1;
-  min-height: 0;
   display: flex;
   flex-direction: column;
+  height: calc(100dvh - env(safe-area-inset-top,0px) - 60px - env(safe-area-inset-bottom,0px));
   overflow: hidden;
-  padding-bottom: 0;
 }
 #view-list .page-header,
 #view-list .list-toolbar {
@@ -175,10 +170,10 @@ input, select, textarea { font-family: inherit; }
 }
 #view-list #routes-container {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 16px;
 }
 
 
