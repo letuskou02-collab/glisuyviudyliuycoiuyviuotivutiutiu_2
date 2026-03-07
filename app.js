@@ -783,11 +783,11 @@ function openModal(id) {
   });
 
   document.getElementById('modal-overlay').classList.add('open');
-  // open後のアニメーション完了を待ってからスクロールをトップにリセット
-  requestAnimationFrame(() => {
+  // slideUpアニメーション(0.25s)完了後にスクロールをトップにリセット
+  setTimeout(() => {
     const _sheet = document.querySelector('.modal-sheet');
     if (_sheet) _sheet.scrollTop = 0;
-  });
+  }, 260);
   const _rc = document.getElementById('routes-container');
   if (_rc) _rc.style.overflow = 'hidden';
   document.querySelector('.bottom-tab-bar').style.display = 'none';
