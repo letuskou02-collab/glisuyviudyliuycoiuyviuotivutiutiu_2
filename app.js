@@ -780,6 +780,10 @@ function openModal(id) {
   });
 
   document.getElementById('modal-overlay').classList.add('open');
+  const _sheet = document.querySelector('.modal-sheet');
+  if (_sheet) _sheet.scrollTop = 0;
+  const _rc = document.getElementById('routes-container');
+  if (_rc) _rc.style.overflow = 'hidden';
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 }
 
@@ -808,6 +812,8 @@ function closeModal(save = true) {
   const _overlayEl = document.getElementById('modal-overlay');
   _overlayEl.classList.remove('open');
   activeModalId = null;
+  const _rc2 = document.getElementById('routes-container');
+  if (_rc2) _rc2.style.overflow = '';
   document.querySelector('.bottom-tab-bar').style.display = '';
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
