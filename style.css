@@ -68,7 +68,7 @@ input, select, textarea { font-family: inherit; }
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: clip;
   min-height: 100dvh;
   background: #f2f2f7;
 }
