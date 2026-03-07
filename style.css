@@ -994,6 +994,49 @@ input, select, textarea { font-family: inherit; }
   flex-direction: column;
   background: #000;
 }
+/* 地図ビューア */
+.map-viewer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 25000;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.map-viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 10px);
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+}
+.map-viewer-close {
+  padding: 6px 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: #f2f2f7;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1c1c1e;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.map-viewer-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1c1e;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.map-viewer-container {
+  flex: 1;
+  width: 100%;
+}
 .map-picker-header {
   display: flex;
   align-items: center;
@@ -1192,6 +1235,20 @@ input, select, textarea { font-family: inherit; }
 }
 .loading-overlay.hidden {
   display: none;
+}
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.loading-title {
+  color: #003087;
+  font-size: 22px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
 }
 @keyframes spin {
   to { transform: rotate(360deg); }

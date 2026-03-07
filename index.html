@@ -568,6 +568,15 @@
     <div class="map-picker-hint" id="map-picker-hint">地図をタップして場所を指定してください</div>
   </div>
 
+  <!-- 地図ビューア -->
+  <div id="map-viewer-overlay" class="map-viewer-overlay" style="display:none">
+    <div class="map-viewer-header">
+      <button id="map-viewer-close" class="map-viewer-close">✕ 閉じる</button>
+      <div class="map-viewer-title" id="map-viewer-title"></div>
+    </div>
+    <div id="map-viewer-container" class="map-viewer-container"></div>
+  </div>
+
   <!-- インポートモーダル -->
   <div id="import-modal-overlay" class="import-modal-overlay" role="dialog" aria-modal="true">
     <div class="import-modal">
@@ -609,9 +618,9 @@
   <script src="./data/route-sign-hash.js"></script>
   <script src="./app.js"></script>
   <div id="loading-overlay" class="loading-overlay">
-    <div id="welcome-content">
+    <div class="loading-content">
       <img src="./icons/icon-192.png" width="110" height="110" alt="国道ステッカーコレクション" style="border-radius:24px;">
-      <div id="welcome-title">国道ステッカー<br>コレクション</div>
+      <div class="loading-title">国道ステッカー<br>コレクション</div>
     </div>
   </div>
 </body>
