@@ -791,6 +791,12 @@ function openModal(id) {
   }, 260);
   const _rc = document.getElementById('routes-container');
   if (_rc) _rc.style.overflow = 'hidden';
+  // モーダル表示中は背景スクロールを完全に止める
+  const _body = document.querySelector('.app-body');
+  if (_body) {
+    _body._savedScrollTop = _body.scrollTop;
+    _body.style.overflow = 'hidden';
+  }
   document.querySelector('.bottom-tab-bar').style.display = 'none';
 }
 
@@ -821,6 +827,14 @@ function closeModal(save = true) {
   activeModalId = null;
   const _rc2 = document.getElementById('routes-container');
   if (_rc2) _rc2.style.overflow = '';
+  // 背景スクロールを復元
+  const _body2 = document.querySelector('.app-body');
+  if (_body2) {
+    _body2.style.overflow = '';
+    if (_body2._savedScrollTop !== undefined) {
+      _body2.scrollTop = _body2._savedScrollTop;
+    }
+  }
   document.querySelector('.bottom-tab-bar').style.display = '';
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
