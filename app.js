@@ -71,8 +71,8 @@ const REGIONS = ['北海道','東北','関東','中部','北陸','近畿','中�
 // === 状態 ===
 let collectedData = {};
 let currentFilter = 'all';
-let currentRegion = '';
-let currentType = '';
+let currentRegions = [];
+let currentTypes = [];
 let currentSort = 'number-asc';
 let gallerySortOrder = 'date-desc';
 let searchQuery = '';
@@ -192,8 +192,8 @@ function getFilteredRoutes() {
     const d = getRouteData(r.id);
     if (currentFilter === 'collected' && !d.collected) return false;
     if (currentFilter === 'not-collected' && d.collected) return false;
-    if (currentRegion && !r.region.includes(currentRegion)) return false;
-    if (currentType && r.type !== currentType) return false;
+    if (currentRegions.length && !currentRegions.includes(r.region)) return false;
+    if (currentTypes.length && !currentTypes.includes(r.type)) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       if (!String(r.id).includes(q) && !r.region.includes(q) && !r.from.includes(q) && !r.to.includes(q)) return false;
@@ -224,14 +224,15 @@ function buildRegionSummary() {
     const done = routes.filter(r => getRouteData(r.id).collected).length;
     const pct = Math.round(done / routes.length * 100);
     const card = document.createElement('div');
-    card.className = 'region-card' + (currentRegion === region ? ' active' : '');
+    card.className = 'region-card' + (currentRegions.includes(region) ? ' active' : '');
     card.innerHTML = `
       <div class="r-name">${region}</div>
       <div class="r-count">${done}/${routes.length}</div>
       <div class="r-bar"><div class="r-bar-fill" style="width:${pct}%"></div></div>
     `;
     card.addEventListener('click', () => {
-      currentRegion = currentRegion === region ? '' : region;
+      const ri = currentRegions.indexOf(region);
+      if (ri >= 0) currentRegions.splice(ri, 1); else currentRegions.push(region);
       switchView('list');
     });
     container.appendChild(card);
@@ -1446,11 +1447,35 @@ function setupEvents() {
   });
 
   // セレクト
-  document.getElementById('region-select').addEventListener('change', (e) => {
-    currentRegion = e.target.value; renderRoutes();
+  document.getElementById('region-filter-btns').addEventListener('click', (e) => {
+    const btn = e.target.closest('.mf-btn');
+    if (!btn) return;
+    const val = btn.dataset.value;
+    if (val === '') {
+      currentRegions = [];
+    } else {
+      const i = currentRegions.indexOf(val);
+      if (i >= 0) currentRegions.splice(i, 1); else currentRegions.push(val);
+    }
+    document.querySelectorAll('#region-filter-btns .mf-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === '' ? currentRegions.length === 0 : currentRegions.includes(b.dataset.value));
+    });
+    renderRoutes();
   });
-  document.getElementById('type-select').addEventListener('change', (e) => {
-    currentType = e.target.value; renderRoutes();
+  document.getElementById('type-filter-btns').addEventListener('click', (e) => {
+    const btn = e.target.closest('.mf-btn');
+    if (!btn) return;
+    const val = btn.dataset.value;
+    if (val === '') {
+      currentTypes = [];
+    } else {
+      const i = currentTypes.indexOf(val);
+      if (i >= 0) currentTypes.splice(i, 1); else currentTypes.push(val);
+    }
+    document.querySelectorAll('#type-filter-btns .mf-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.value === '' ? currentTypes.length === 0 : currentTypes.includes(b.dataset.value));
+    });
+    renderRoutes();
   });
 
   // グリッド/リスト切替

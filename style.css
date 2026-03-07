@@ -430,7 +430,8 @@ input, select, textarea { font-family: inherit; }
 
 .select-row {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 6px;
   padding: 6px 12px 10px;
 }
 .select-row select {
@@ -447,6 +448,40 @@ input, select, textarea { font-family: inherit; }
 }
 .select-row + .select-row {
   padding-top: 0;
+}
+/* 複数選択フィルター */
+.multi-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.multi-filter-label {
+  font-size: 11px;
+  color: #8e8e93;
+  font-weight: 600;
+  flex-shrink: 0;
+  width: 24px;
+}
+.multi-filter-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.mf-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f2f2f7;
+  color: #3a3a3c;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+.mf-btn.active {
+  background: #0055c8;
+  color: white;
 }
 
 .toolbar-right {

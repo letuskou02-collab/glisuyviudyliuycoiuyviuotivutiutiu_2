@@ -138,25 +138,31 @@
           <button class="tab-btn" data-filter="not-collected">未取得</button>
         </div>
         <div class="select-row">
-          <select id="region-select">
-            <option value="">地方：すべて</option>
-            <option value="北海道">北海道</option>
-            <option value="東北">東北</option>
-            <option value="関東">関東</option>
-            <option value="中部">中部</option>
-            <option value="北陸">北陸</option>
-            <option value="近畿">近畿</option>
-            <option value="中国">中国</option>
-            <option value="四国">四国</option>
-            <option value="九州">九州</option>
-            <option value="沖縄">沖縄</option>
-          </select>
-          <select id="type-select">
-            <option value="">種別：すべて</option>
-            <option value="一桁">一桁国道</option>
-            <option value="二桁">二桁国道</option>
-            <option value="三桁">三桁国道</option>
-          </select>
+          <div class="multi-filter-wrap">
+            <div class="multi-filter-label">地方</div>
+            <div class="multi-filter-btns" id="region-filter-btns">
+              <button class="mf-btn active" data-value="">すべて</button>
+              <button class="mf-btn" data-value="北海道">北海道</button>
+              <button class="mf-btn" data-value="東北">東北</button>
+              <button class="mf-btn" data-value="関東">関東</button>
+              <button class="mf-btn" data-value="中部">中部</button>
+              <button class="mf-btn" data-value="北陸">北陸</button>
+              <button class="mf-btn" data-value="近畿">近畿</button>
+              <button class="mf-btn" data-value="中国">中国</button>
+              <button class="mf-btn" data-value="四国">四国</button>
+              <button class="mf-btn" data-value="九州">九州</button>
+              <button class="mf-btn" data-value="沖縄">沖縄</button>
+            </div>
+          </div>
+          <div class="multi-filter-wrap">
+            <div class="multi-filter-label">種別</div>
+            <div class="multi-filter-btns" id="type-filter-btns">
+              <button class="mf-btn active" data-value="">すべて</button>
+              <button class="mf-btn" data-value="一桁">一桁</button>
+              <button class="mf-btn" data-value="二桁">二桁</button>
+              <button class="mf-btn" data-value="三桁">三桁</button>
+            </div>
+          </div>
         </div>
         <div class="toolbar-right">
           <span id="section-count" class="section-count"></span>
