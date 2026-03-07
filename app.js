@@ -631,7 +631,7 @@ function openGalleryDetail(id) {
     if (d.date)     rows.push(`<div class="gd-info-row"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" fill="currentColor" opacity=".85"/><path d="M2 6h12" stroke="#fff" stroke-width="1"/><path d="M5 2v2M11 2v2" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/><rect x="4.5" y="8" width="2" height="2" rx=".4" fill="#fff"/><rect x="7.5" y="8" width="2" height="2" rx=".4" fill="#fff"/></svg> <span>${d.date}</span></div>`);
     if (d.location) {
       const mapBtn = (d.lat != null && d.lng != null)
-        ? `<a class="gd-map-btn" href="https://maps.gsi.go.jp/#17/${d.lat}/${d.lng}/" target="_blank" rel="noopener">🗺 地図で確認</a>`
+        ? `<a class="gd-map-btn" href="#" data-lat="${d.lat}" data-lng="${d.lng}" data-label="${d.location}">🗺 地図で確認</a>`
         : '';
       rows.push(`<div class="gd-info-row gd-info-row-location"><svg class="label-icon" viewBox="0 0 16 16" fill="none"><path d="M8 1.5C5.51 1.5 3.5 3.51 3.5 6c0 3.75 4.5 8.5 4.5 8.5S12.5 9.75 12.5 6c0-2.49-2.01-4.5-4.5-4.5zm0 6.25A1.75 1.75 0 1 1 8 4a1.75 1.75 0 0 1 0 3.75z" fill="currentColor"/></svg> <span>${d.location}</span>${mapBtn}</div>`);
     }
@@ -1398,6 +1398,38 @@ function closeMapPicker() {
   document.getElementById('map-picker-overlay').style.display = 'none';
 }
 
+// ---------- 地図ビューア ----------
+let viewerMap = null;
+let viewerMarker = null;
+
+function openMapViewer(lat, lng, label) {
+  const overlay = document.getElementById('map-viewer-overlay');
+  overlay.style.display = 'flex';
+  const titleEl = document.getElementById('map-viewer-title');
+  titleEl.textContent = label || '';
+
+  if (!viewerMap) {
+    viewerMap = L.map('map-viewer-container', { zoomControl: true });
+    L.tileLayer('https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', {
+      attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">国土地理院</a>',
+      maxZoom: 18
+    }).addTo(viewerMap);
+  }
+
+  setTimeout(() => {
+    viewerMap.invalidateSize();
+    viewerMap.setView([lat, lng], 17);
+    if (viewerMarker) viewerMarker.remove();
+    viewerMarker = L.marker([lat, lng]).addTo(viewerMap);
+  }, 60);
+}
+
+function closeMapViewer() {
+  document.getElementById('map-viewer-overlay').style.display = 'none';
+}
+// ---------- 地図ビューアここまで ----------
+
+
 function confirmMapPicker() {
   if (!pickerLatLng) return;
   const lat = parseFloat(pickerLatLng.lat.toFixed(6));
@@ -1597,6 +1629,17 @@ function setupEvents() {
   document.getElementById('gallery-detail-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('gallery-detail-overlay')) closeGalleryDetail();
   });
+  // gd-map-btn: 取得場所を地図ビューアで表示（イベント委譲）
+  document.getElementById('gd-collected-info').addEventListener('click', (e) => {
+    const btn = e.target.closest('.gd-map-btn');
+    if (!btn) return;
+    e.preventDefault();
+    const lat = parseFloat(btn.dataset.lat);
+    const lng = parseFloat(btn.dataset.lng);
+    const label = btn.dataset.label || '';
+    if (!isNaN(lat) && !isNaN(lng)) openMapViewer(lat, lng, label);
+  });
+  document.getElementById('map-viewer-close').addEventListener('click', closeMapViewer);
   document.getElementById('detail-edit-btn').addEventListener('click', () => {
     const id = activeDetailId;
     closeDetail();
