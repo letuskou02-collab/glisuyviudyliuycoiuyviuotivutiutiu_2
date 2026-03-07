@@ -162,6 +162,7 @@ input, select, textarea { font-family: inherit; }
   display: flex;
   flex-direction: column;
   height: calc(100dvh - env(safe-area-inset-top,0px) - 60px - env(safe-area-inset-bottom,0px));
+  min-height: 0;
   overflow: hidden;
 }
 #view-list .page-header,
@@ -171,7 +172,9 @@ input, select, textarea { font-family: inherit; }
 #view-list #routes-container {
   flex: 1;
   min-height: 0;
+  width: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 16px;
 }
