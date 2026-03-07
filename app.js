@@ -777,11 +777,17 @@ function openModal(id) {
   idbGetPhotos(id).then(photos => {
     currentPhotos = Array.isArray(photos) ? [...photos] : [];
     renderPhotoGrid();
+    // 写真ロード後もスクロール位置をトップに戻す
+    const _s = document.querySelector('.modal-sheet');
+    if (_s) _s.scrollTop = 0;
   });
 
   document.getElementById('modal-overlay').classList.add('open');
-  const _sheet = document.querySelector('.modal-sheet');
-  if (_sheet) _sheet.scrollTop = 0;
+  // open後のアニメーション完了を待ってからスクロールをトップにリセット
+  requestAnimationFrame(() => {
+    const _sheet = document.querySelector('.modal-sheet');
+    if (_sheet) _sheet.scrollTop = 0;
+  });
   const _rc = document.getElementById('routes-container');
   if (_rc) _rc.style.overflow = 'hidden';
   document.querySelector('.bottom-tab-bar').style.display = 'none';
