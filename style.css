@@ -157,27 +157,6 @@ input, select, textarea { font-family: inherit; }
   width: 100%;
   min-height: calc(100dvh - 60px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
 }
-/* 登録タブ: ヘッダー・ツールバーだけ固定し、国道グリッドのみスクロール */
-#view-list {
-  display: flex;
-  flex-direction: column;
-  height: calc(100dvh - env(safe-area-inset-top,0px) - 60px - env(safe-area-inset-bottom,0px));
-  min-height: 0;
-  overflow: hidden;
-}
-#view-list .page-header,
-#view-list .list-toolbar {
-  flex-shrink: 0;
-}
-#view-list #routes-container {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 16px;
-}
 
 
 /* ===================================================
@@ -391,7 +370,7 @@ input, select, textarea { font-family: inherit; }
 }
 .page-header h2 { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .page-header-icon { display: flex; align-items: center; }
-.list-toolbar { background: white; border-bottom: 1px solid #e5e5ea; }
+.list-toolbar { background: white; border-bottom: 1px solid #e5e5ea; position: sticky; top: 48px; z-index: 49; }
 .search-bar {
   display: flex;
   align-items: center;
@@ -478,7 +457,6 @@ input, select, textarea { font-family: inherit; }
   grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
   gap: 10px;
   padding: 14px 12px;
-  align-items: start;
 }
 .route-card {
   background: white;
@@ -492,8 +470,7 @@ input, select, textarea { font-family: inherit; }
 }
 .route-card:active { transform: scale(0.93); }
 .routes-grid .route-card {
-  aspect-ratio: 1 / 1;
-  contain: layout style;
+  aspect-ratio: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
