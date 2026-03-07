@@ -66,11 +66,11 @@ input, select, textarea { font-family: inherit; }
 .app-body {
   width: 100%;
   padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 100dvh;
+  overflow: hidden;
+  height: calc(100dvh - env(safe-area-inset-top, 0px));
   background: #f2f2f7;
+  display: flex;
+  flex-direction: column;
 }
 
 /* === ボトムタブバー === */
@@ -155,7 +155,28 @@ input, select, textarea { font-family: inherit; }
 /* === ページ共通 === */
 .view-page {
   width: 100%;
-  min-height: calc(100dvh - 60px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
+/* 登録タブ: ヘッダー固定・グリッドのみスクロール */
+#view-list {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+#view-list .page-header,
+#view-list .list-toolbar {
+  flex-shrink: 0;
+}
+#view-list #routes-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
 }
 
 
@@ -956,27 +977,43 @@ input, select, textarea { font-family: inherit; }
   opacity: 0.4;
   cursor: default;
 }
-.map-picker-btn-gps {
-  background: rgba(255,255,255,0.25);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.5);
-  border-radius: 8px;
-  padding: 7px 11px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  white-space: nowrap;
-  flex-shrink: 0;
+.map-picker-map-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
-.map-picker-btn-gps:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-#map-picker-container {
+.map-picker-map-wrap #map-picker-container {
   flex: 1;
   width: 100%;
   min-height: 0;
+}
+.map-picker-btn-gps {
+  position: absolute;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  right: 16px;
+  z-index: 1000;
+  width: 44px;
+  height: 44px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.map-picker-btn-gps:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.map-picker-btn-gps svg {
+  width: 100%;
+  height: 100%;
 }
 .map-picker-hint {
   background: rgba(0,0,0,0.65);

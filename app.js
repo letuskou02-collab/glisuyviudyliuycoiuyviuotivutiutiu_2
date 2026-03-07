@@ -780,7 +780,12 @@ function openModal(id) {
   });
 
   document.getElementById('modal-overlay').classList.add('open');
+  // シートのスクロール位置を常にトップにリセット
+  const _sheet = document.querySelector('.modal-sheet');
+  if (_sheet) _sheet.scrollTop = 0;
   document.querySelector('.bottom-tab-bar').style.display = 'none';
+  const _rc = document.getElementById('routes-container');
+  if (_rc) _rc.style.overflow = 'hidden';
 }
 
 function closeModal(save = true) {
@@ -809,6 +814,8 @@ function closeModal(save = true) {
   _overlayEl.classList.remove('open');
   activeModalId = null;
   document.querySelector('.bottom-tab-bar').style.display = '';
+  const _rc = document.getElementById('routes-container');
+  if (_rc) _rc.style.overflow = '';
   if (_reopenDetailId !== null) {
     const _rid = _reopenDetailId;
     _reopenDetailId = null;
