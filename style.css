@@ -1174,25 +1174,24 @@ input, select, textarea { font-family: inherit; }
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: rgba(255,255,255,0.6);
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.15s;
+  transition: opacity 0.4s ease;
 }
 .loading-overlay.active {
   opacity: 1;
   pointer-events: auto;
 }
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid #e0e0e0;
-  border-top-color: #007aff;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+.loading-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+.loading-overlay.hidden {
+  display: none;
 }
 @keyframes spin {
   to { transform: rotate(360deg); }

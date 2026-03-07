@@ -832,10 +832,21 @@ function closeModal(save = true) {
 // === エクスポート / インポート / リセット ===
 // === ローディング表示 ===
 function showLoading() {
-  document.getElementById('loading-overlay').classList.add('active');
+  const el = document.getElementById('loading-overlay');
+  el.classList.remove('hidden', 'fade-out');
+  // 「hidden」解除後にクラス変更を適用させるためrAFを挿む
+  requestAnimationFrame(() => {
+    el.classList.add('active');
+  });
 }
 function hideLoading() {
-  document.getElementById('loading-overlay').classList.remove('active');
+  const el = document.getElementById('loading-overlay');
+  el.classList.add('fade-out');
+  el.classList.remove('active');
+  el.addEventListener('transitionend', () => {
+    el.classList.add('hidden');
+    el.classList.remove('fade-out');
+  }, { once: true });
 }
 
 function exportData() {
