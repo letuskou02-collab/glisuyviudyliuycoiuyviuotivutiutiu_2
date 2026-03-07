@@ -851,7 +851,7 @@ function exportData() {
     URL.revokeObjectURL(url);
     hideLoading();
     showToast('エクスポートしました', 'success');
-  }, 500);
+  }, 800);
 }
 let _importPending = null; // 選択ダイアログ中に保持するパース済みデータ
 
@@ -1623,7 +1623,7 @@ function setupEvents() {
     const card = document.querySelector(`.route-card[data-id="${activeModalId}"]`);
     if (card) card.classList.toggle('collected', newVal);
     hideLoading();
-    }, 400);
+    }, 700);
   });
 
   // その他ページのボタン
