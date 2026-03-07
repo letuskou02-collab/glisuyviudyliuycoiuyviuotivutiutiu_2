@@ -261,7 +261,8 @@ function buildRecentList() {
       <div class="recent-num">${id}号</div>
       <div class="recent-body">
         <div class="recent-name">${route.region}　${route.from}→${route.to}</div>
-        <div class="recent-meta">${d.location ? '📍 ' + d.location + '　' : ''}📅 ${d.date}</div>
+        ${d.location ? `<div class="recent-meta">📍 ${d.location}</div>` : ''}
+        <div class="recent-meta">📅 ${d.date}</div>
       </div>
     `;
     row.addEventListener('click', () => openDetail(parseInt(id)));
