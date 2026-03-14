@@ -1664,6 +1664,26 @@ function setupEvents() {
     showLoading();
     setTimeout(() => { hideLoading(); closeModal(true); }, 700);
   }, { passive: false });
+
+  // 削除ボタン
+  document.getElementById('btn-modal-delete').addEventListener('click', () => {
+    if (activeModalId === null) return;
+    const id = activeModalId;
+    if (!confirm(`国道${id}号のすべてのデータ（取得記録・写真・メモ・場所）を削除します。\nよろしいですか？`)) return;
+    showLoading();
+    setTimeout(() => {
+      delete collectedData[id];
+      saveData();
+      idbDeletePhotos(id).then(() => {
+        hideLoading();
+        activeModalId = null;
+        document.getElementById('modal-overlay').classList.remove('open');
+        document.querySelector('.bottom-tab-bar').style.display = '';
+        renderAll();
+        showToast(`国道${id}号のデータを削除しました`);
+      });
+    }, 700);
+  });
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-overlay')) closeModal(true);
   });
