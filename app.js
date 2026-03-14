@@ -889,7 +889,7 @@ async function exportData() {
     const photoMap = {};
     for (const entry of allPhotos) {
       if (entry.photos && entry.photos.length > 0) {
-        photoMap[entry.id] = entry.photos;
+        photoMap[entry.routeId] = entry.photos;
       }
     }
     const exportObj = {};
@@ -897,6 +897,12 @@ async function exportData() {
       exportObj[id] = { ...data };
       if (photoMap[Number(id)]) {
         exportObj[id].photos = photoMap[Number(id)];
+      }
+    }
+    // 写真はあるがcollectedDataに記録がない国道も含める
+    for (const [routeId, photos] of Object.entries(photoMap)) {
+      if (!exportObj[routeId]) {
+        exportObj[routeId] = { photos };
       }
     }
     const json = JSON.stringify(exportObj, null, 2);
