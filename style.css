@@ -785,8 +785,8 @@ input, select, textarea { font-family: inherit; }
 .modal-sheet {
   width: 100%;
   max-width: 540px;
-  /* svh: キーボード表示時の最小viewport基準でシートが収まるようにする */
-  max-height: 92svh;
+  /* dvh: 国道検索と同じviewport基準 */
+  max-height: 92dvh;
   background: #f2f2f7;
   border-radius: 20px 20px 0 0;
   overflow-y: auto;
