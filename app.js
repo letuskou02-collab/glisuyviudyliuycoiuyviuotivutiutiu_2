@@ -1,5 +1,11 @@
 'use strict';
 
+// JST（UTC+9）の今日の日付を YYYY-MM-DD で返す
+function todayJST() {
+  const d = new Date(Date.now() + 9 * 60 * 60 * 1000);
+  return d.toISOString().slice(0, 10);
+}
+
 // === 定数 ===
 const STORAGE_KEY = 'kokudo_sticker_data';
 const IDB_NAME = 'kokudo_photos';
@@ -320,7 +326,7 @@ function createRouteCard(route) {
 function quickToggle(id, card) {
   const d = getRouteData(id);
   const newVal = !d.collected;
-  setRouteData(id, { collected: newVal, date: newVal ? new Date().toISOString().slice(0, 10) : null });
+  setRouteData(id, { collected: newVal, date: newVal ? todayJST() : null });
   card.classList.toggle('collected', newVal);
   updateStats();
   buildRegionSummary();
@@ -875,20 +881,38 @@ function hideLoading() {
   }, { once: true });
 }
 
-function exportData() {
-  const json = JSON.stringify(collectedData, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `kokudo-sticker-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+async function exportData() {
   showLoading();
-  setTimeout(() => {
+  try {
+    // collectedDataをコピーしてIndexedDBの写真を埋め込む
+    const allPhotos = await idbGetAllPhotos(); // [{id, photos:[base64,...]}, ...]
+    const photoMap = {};
+    for (const entry of allPhotos) {
+      if (entry.photos && entry.photos.length > 0) {
+        photoMap[entry.id] = entry.photos;
+      }
+    }
+    const exportObj = {};
+    for (const [id, data] of Object.entries(collectedData)) {
+      exportObj[id] = { ...data };
+      if (photoMap[Number(id)]) {
+        exportObj[id].photos = photoMap[Number(id)];
+      }
+    }
+    const json = JSON.stringify(exportObj, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kokudo-sticker-${todayJST()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
     hideLoading();
-    showToast('エクスポートしました', 'success');
-  }, 800);
+    showToast('エクスポートしました（写真込み）', 'success');
+  } catch (e) {
+    hideLoading();
+    showToast('エクスポートに失敗しました', 'error');
+  }
 }
 let _importPending = null; // 選択ダイアログ中に保持するパース済みデータ
 
@@ -1670,7 +1694,7 @@ function setupEvents() {
     const id = activeDetailId;
     const d = getRouteData(id);
     const newVal = !d.collected;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayJST();
     setRouteData(id, { collected: newVal, date: newVal ? today : null });
     renderAll();
     _updateDetailStatus(id, getRouteData(id));
@@ -1684,11 +1708,9 @@ function setupEvents() {
   // 取得トグル
   document.getElementById('collect-toggle-btn').addEventListener('click', () => {
     if (activeModalId === null) return;
-    showLoading();
-    setTimeout(() => {
     const d = getRouteData(activeModalId);
     const newVal = !d.collected;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayJST();
     const _toggleDateRow = document.getElementById('modal-date-row');
     const _toggleDateInput = document.getElementById('modal-date-input');
     if (newVal) {
@@ -1706,8 +1728,6 @@ function setupEvents() {
     updateStats(); buildRegionSummary(); buildRecentList();
     const card = document.querySelector(`.route-card[data-id="${activeModalId}"]`);
     if (card) card.classList.toggle('collected', newVal);
-    hideLoading();
-    }, 700);
   });
 
   // その他ページのボタン
