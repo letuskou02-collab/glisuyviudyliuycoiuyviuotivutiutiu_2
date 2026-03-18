@@ -1208,7 +1208,7 @@ function updateMapLink(lat, lng) {
 
 // === 写真 ===
 function addPhotos(files) {
-  const MAX = 500, QUALITY = 0.55;
+  const MAX = 1200, QUALITY = 0.72;
   const MAX_PHOTOS = 10;
   if (currentPhotos.length >= MAX_PHOTOS) {
     showToast(`写真は最大${MAX_PHOTOS}枚までです`, 'default');
